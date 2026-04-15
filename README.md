@@ -14,7 +14,7 @@ npm run dev
 Build the app for a sub-path deployment:
 
 ```bash
-VITE_BASE_PATH=/Service%20Card%20Builder/ npm run build
+VITE_BASE_PATH=/service-card-builder/ npm run build
 ```
 
 The output is generated in `dist/`.
@@ -33,6 +33,6 @@ After creating the GitHub repository:
 
 To serve this app under:
 
-`https://d3mee.com/Service%20Card%20Builder/`
+`https://d3mee.com/service-card-builder/`
 
 configure your reverse proxy (Nginx/Apache) to map that path to the deployed static assets or the Pages site.
