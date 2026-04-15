@@ -50,6 +50,12 @@
         <section class="panel active" data-panel="identity">
           <h2>Service Identity</h2>
           <p class="hint panel-intro">This is the canonical service name and description for exports and print. The English service name also drives the SLA “Service” field when “Match Identity name” is enabled on the SLA tab.</p>
+          <div class="tab-guide">
+            <h3 class="tab-guide__title">What to fill in | ماذا يجب إدخاله</h3>
+            <p class="tab-guide__text"><strong>EN:</strong> Define the official service profile used across all sections and exports.</p>
+            <p class="tab-guide__text" dir="rtl"><strong>AR:</strong> عرّف بيانات الخدمة الرسمية التي سيتم استخدامها في جميع الأقسام والمخرجات.</p>
+            <p class="tab-guide__text"><strong>Required from user:</strong> Service Name (EN), Description (EN), Version. Recommended: owner, status, effective date, Service ID, and Arabic name/description.</p>
+          </div>
           <fieldset class="form-fieldset">
             <legend>Names</legend>
             <div class="grid two">
@@ -83,36 +89,72 @@
         <section class="panel" data-panel="actors">
           <h2>Actors</h2>
           <p class="hint panel-intro">People and roles referenced in workflow and RACI. Tab through cells quickly; use Copy to clone a similar row.</p>
+          <div class="tab-guide">
+            <h3 class="tab-guide__title">What to fill in | ماذا يجب إدخاله</h3>
+            <p class="tab-guide__text"><strong>EN:</strong> Add all people/teams that participate in approvals, execution, ownership, or KPI responsibility.</p>
+            <p class="tab-guide__text" dir="rtl"><strong>AR:</strong> أضف جميع الأشخاص/الفرق المشاركين في الموافقات أو التنفيذ أو المسؤولية أو مؤشرات الأداء.</p>
+            <p class="tab-guide__text"><strong>Required from user:</strong> At least one actor <em>Name</em>. Recommended: Role, Department, Email for clarity and reuse in other tabs.</p>
+          </div>
           <div id="actorsEditor" class="table-editor"></div>
         </section>
 
         <section class="panel" data-panel="workflow">
           <h2>Workflow</h2>
           <p class="hint panel-intro">Order defines the printed sequence. Each step creates a matching RACI row; edit step text here (not on RACI). Actor suggests names from the Actors tab — you can still type teams not listed.</p>
+          <div class="tab-guide">
+            <h3 class="tab-guide__title">What to fill in | ماذا يجب إدخاله</h3>
+            <p class="tab-guide__text"><strong>EN:</strong> Capture the end-to-end process steps in order, including who does each step and how long it takes.</p>
+            <p class="tab-guide__text" dir="rtl"><strong>AR:</strong> وثّق خطوات العملية من البداية للنهاية بالترتيب، مع تحديد المنفذ والمدة لكل خطوة.</p>
+            <p class="tab-guide__text"><strong>Required from user:</strong> Step text for each row. Recommended: Actor, Type (Start/Decision/Action), Duration, and any Condition.</p>
+          </div>
           <div id="workflowEditor" class="table-editor"></div>
         </section>
 
         <section class="panel" data-panel="fields">
           <h2>Form Fields</h2>
           <p class="hint panel-intro">Each row is one question on the request form. Field types and mandatory flags follow the enterprise template; use Dependency when a field only applies under conditions.</p>
+          <div class="tab-guide">
+            <h3 class="tab-guide__title">What to fill in | ماذا يجب إدخاله</h3>
+            <p class="tab-guide__text"><strong>EN:</strong> Define every input/question the requester must provide in the service request form.</p>
+            <p class="tab-guide__text" dir="rtl"><strong>AR:</strong> حدّد جميع الحقول/الأسئلة التي يجب على مقدم الطلب تعبئتها في نموذج الخدمة.</p>
+            <p class="tab-guide__text"><strong>Required from user:</strong> Field Name (EN), Field Type, Mandatory flag. Recommended: Arabic name/question, initial values, and dependency rules.</p>
+          </div>
           <div id="fieldsEditor" class="table-editor"></div>
         </section>
 
         <section class="panel" data-panel="raci">
           <h2>RACI Matrix</h2>
           <p class="hint panel-intro">Rows and STEP labels mirror the Workflow tab. RACI columns are generated from Actor names, so update Actors first when responsibilities change.</p>
+          <div class="tab-guide">
+            <h3 class="tab-guide__title">What to fill in | ماذا يجب إدخاله</h3>
+            <p class="tab-guide__text"><strong>EN:</strong> Assign accountability and participation for each workflow step using RACI values.</p>
+            <p class="tab-guide__text" dir="rtl"><strong>AR:</strong> حدّد المسؤوليات والمشاركة لكل خطوة في سير العمل باستخدام قيم RACI.</p>
+            <p class="tab-guide__text"><strong>Required from user:</strong> Select at least one valid RACI value (A/R, A, R, C, I, -) per step across relevant roles.</p>
+          </div>
           <div id="raciEditor" class="table-editor"></div>
         </section>
 
         <section class="panel" data-panel="support">
           <h2>Support Groups</h2>
           <p class="hint panel-intro">Operational contacts for escalation. Align names with actors or teams where possible. Wider columns scroll horizontally; actions stay pinned on the right.</p>
+          <div class="tab-guide">
+            <h3 class="tab-guide__title">What to fill in | ماذا يجب إدخاله</h3>
+            <p class="tab-guide__text"><strong>EN:</strong> List support and escalation teams responsible after service handoff or during incidents.</p>
+            <p class="tab-guide__text" dir="rtl"><strong>AR:</strong> أدرج فرق الدعم والتصعيد المسؤولة بعد تسليم الخدمة أو أثناء الحوادث.</p>
+            <p class="tab-guide__text"><strong>Required from user:</strong> Support Group name per row. Recommended: contact names and email distribution lists.</p>
+          </div>
           <div id="supportEditor" class="table-editor"></div>
         </section>
 
         <section class="panel" data-panel="sla">
           <h2>SLA & KPIs</h2>
           <p class="hint panel-intro">SLA block text appears on the printed card. KPI “Responsibility” can pick from Actors or any free-text owner.</p>
+          <div class="tab-guide">
+            <h3 class="tab-guide__title">What to fill in | ماذا يجب إدخاله</h3>
+            <p class="tab-guide__text"><strong>EN:</strong> Define service commitments, escalation thresholds, and measurable KPI targets for governance.</p>
+            <p class="tab-guide__text" dir="rtl"><strong>AR:</strong> حدّد التزامات مستوى الخدمة ونقاط التصعيد ومؤشرات الأداء القابلة للقياس للحوكمة.</p>
+            <p class="tab-guide__text"><strong>Required from user:</strong> SLA Service, Requester(s), Support Group, Controls, Duration, plus at least one KPI (name, formula, target, owner, frequency).</p>
+          </div>
           <div class="sla-kpi-insights" aria-live="polite">
             <div class="sla-kpi-insight">
               <span class="sla-kpi-insight__label">SLA Duration</span>

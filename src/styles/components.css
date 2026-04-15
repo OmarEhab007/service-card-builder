@@ -370,6 +370,30 @@
   font-size: 11px;
 }
 
+.tab-guide {
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tab-guide__title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand-ink);
+}
+
+.tab-guide__text {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--neutral-700);
+}
+
 .fulfillment-cards {
   display: grid;
   gap: 14px;
