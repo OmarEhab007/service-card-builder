@@ -1,6 +1,6 @@
 export const schema = {
   type: "object",
-  required: ["fulfillment", "raciConfig", "identity", "actors", "workflow", "fields", "raci", "support", "sla", "kpis"],
+  required: ["fulfillment", "raciConfig", "identity", "actors", "workflow", "fields", "raci", "support", "sla", "slaParts", "kpis"],
   properties: {
     schemaVersion: { type: "string" },
     fulfillment: {
@@ -148,6 +148,20 @@ export const schema = {
         notif2Who: { type: "string" },
         notif2When: { type: "string" },
         mirrorServiceName: { type: "boolean" }
+      }
+    },
+    slaParts: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["part", "team", "duration"],
+        properties: {
+          part: { type: "string", minLength: 1 },
+          team: { type: "string", minLength: 1 },
+          scope: { type: "string" },
+          duration: { type: "string", minLength: 1 },
+          target: { type: "string" }
+        }
       }
     },
     kpis: {

@@ -103,15 +103,23 @@ function parseDurationBusinessDays(value) {
 
 function inferSupportGroup(state) {
   if (state.sla?.supportGroup?.trim()) return state.sla.supportGroup.trim();
-  const firstSupportGroup = (state.support || []).find((row) => String(row.supportGroup || "").trim());
-  if (firstSupportGroup) return firstSupportGroup.supportGroup.trim();
+  const supportGroups = (state.support || []).map((row) => String(row.supportGroup || "").trim()).filter(Boolean);
+  if (supportGroups.length) return supportGroups.join(", ");
   const systemActor = (state.actors || []).find((row) => /system/i.test(String(row.name || "")));
   return systemActor?.name?.trim() || "";
+}
+
+function parseTeamList(value) {
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function renderSlaKpiInsights() {
   const state = getState();
   const sla = state.sla || {};
+  const slaParts = state.slaParts || [];
   const durationDays = parseDurationBusinessDays(sla.duration);
   const n1 = parsePercent(sla.notif1When);
   const n2 = parsePercent(sla.notif2When);
@@ -120,6 +128,7 @@ function renderSlaKpiInsights() {
   const durationEl = $("#slaDurationDays");
   const gapEl = $("#slaNotifGap");
   const kpiCountEl = $("#kpiCount");
+  const healthEl = $("#slaHealth");
   const notifPreview = $("#slaNotificationPreview");
 
   if (durationEl) {
@@ -132,12 +141,19 @@ function renderSlaKpiInsights() {
     const count = Array.isArray(state.kpis) ? state.kpis.length : 0;
     kpiCountEl.textContent = String(count);
   }
+  if (healthEl) {
+    const essentials = [sla.service, sla.requester, sla.supportGroup, sla.duration].filter((v) => String(v || "").trim()).length;
+    const hasSplitSla = slaParts.some((row) => String(row.team || "").trim() && String(row.duration || "").trim());
+    healthEl.textContent = hasSplitSla || essentials === 4 ? "Ready" : essentials >= 2 ? "In progress" : "Needs input";
+  }
   if (notifPreview) {
+    const teams = parseTeamList(sla.supportGroup);
+    const teamsLabel = teams.length ? teams.join(", ") : "No team selected";
     const who1 = sla.notif1Who || "First owner";
     const when1 = sla.notif1When || "first threshold";
     const who2 = sla.notif2Who || "Second owner";
     const when2 = sla.notif2When || "second threshold";
-    notifPreview.textContent = `Escalation: ${who1} at ${when1}, then ${who2} at ${when2}.`;
+    notifPreview.textContent = `Teams: ${teamsLabel}. Escalation: ${who1} at ${when1}, then ${who2} at ${when2}.`;
   }
 }
 
@@ -172,9 +188,11 @@ function bindSlaKpiActions() {
     autoNotifBtn.addEventListener("click", () => {
       patchState((state) => {
         if (!state.sla) state.sla = {};
-        const supportOwner = inferSupportGroup(state) || "Support Team";
-        if (!state.sla.notif1Who?.trim()) state.sla.notif1Who = `${supportOwner} supervisor`;
-        if (!state.sla.notif2Who?.trim()) state.sla.notif2Who = `${supportOwner} manager`;
+        const teams = parseTeamList(state.sla.supportGroup) || [];
+        const primary = teams[0] || inferSupportGroup(state) || "Support Team";
+        const secondary = teams[1] || primary;
+        if (!state.sla.notif1Who?.trim()) state.sla.notif1Who = `${primary} supervisor`;
+        if (!state.sla.notif2Who?.trim()) state.sla.notif2Who = `${secondary} manager`;
         state.sla.notif1When = "75%";
         state.sla.notif2When = "90%";
       });
@@ -222,6 +240,71 @@ function bindSlaKpiActions() {
       });
       if (typeof kpisEditorRef?.render === "function") {
         kpisEditorRef.render();
+      }
+      renderSlaKpiInsights();
+    });
+  }
+
+  const kpiBlankBtn = $("#btnKpiAddBlank");
+  if (kpiBlankBtn) {
+    kpiBlankBtn.addEventListener("click", () => {
+      patchState((state) => {
+        if (!Array.isArray(state.kpis)) state.kpis = [];
+        state.kpis.push({ name: "", formula: "", target: "", owner: inferSupportGroup(state) || "", frequency: "Monthly" });
+      });
+      if (typeof kpisEditorRef?.render === "function") {
+        kpisEditorRef.render();
+      }
+      renderSlaKpiInsights();
+    });
+  }
+
+  [
+    ["btnDuration3BD", "3BD"],
+    ["btnDuration5BD", "5BD"],
+    ["btnDuration10BD", "10BD"]
+  ].forEach(([id, value]) => {
+    const btn = $("#" + id);
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      patchState((state) => {
+        if (!state.sla) state.sla = {};
+        state.sla.duration = value;
+      });
+      fillFormFromState();
+    });
+  });
+
+  const splitBtn = $("#btnSlaSplitByTeams");
+  if (splitBtn) {
+    splitBtn.addEventListener("click", () => {
+      patchState((state) => {
+        const explicitTeams = parseTeamList(state.sla?.supportGroup);
+        const supportTeams = (state.support || []).map((row) => String(row.supportGroup || "").trim()).filter(Boolean);
+        const sourceTeams = explicitTeams.length ? explicitTeams : supportTeams;
+        if (!Array.isArray(state.slaParts)) state.slaParts = [];
+        if (!sourceTeams.length) {
+          if (!state.slaParts.length) {
+            state.slaParts.push({
+              part: "Part 1",
+              team: "",
+              scope: "Main request processing",
+              duration: state.sla?.duration || "5BD",
+              target: "Within agreed timeline"
+            });
+          }
+          return;
+        }
+        state.slaParts = sourceTeams.slice(0, 5).map((team, idx) => ({
+          part: `Part ${idx + 1}`,
+          team,
+          scope: idx === 0 ? "Initial handling" : idx === sourceTeams.length - 1 ? "Final delivery" : "Intermediate handoff",
+          duration: idx === 0 ? "2BD" : "1BD",
+          target: "On-time completion"
+        }));
+      });
+      if (typeof slaPartsEditorRef?.render === "function") {
+        slaPartsEditorRef.render();
       }
       renderSlaKpiInsights();
     });
@@ -295,6 +378,7 @@ let rerenderAllTableEditors = () => {};
 let workflowEditorRef;
 let raciEditorRef;
 let kpisEditorRef;
+let slaPartsEditorRef;
 
 const RACI_VALUE_OPTIONS = ["A/R", "A", "R", "C", "I", "-"];
 
@@ -400,6 +484,21 @@ function initEditors() {
       emptyMessage: "List operational support groups and contacts. Separate multiple names or emails with commas if needed.",
       addRowLabel: "Add support group"
     }),
+    (slaPartsEditorRef = new TableEditor({
+      mountId: "slaPartsEditor",
+      stateKey: "slaParts",
+      columns: [
+        { key: "part", label: "Part / Phase" },
+        { key: "team", label: "Responsible Team" },
+        { key: "scope", label: "Scope" },
+        { key: "duration", label: "SLA Duration" },
+        { key: "target", label: "Target / Commitment" }
+      ],
+      defaultRow: { part: "", team: "", scope: "", duration: "", target: "" },
+      emptyMessage:
+        "Split one request into multiple SLA parts. Each row maps to a team with its own SLA duration and target.",
+      addRowLabel: "Add SLA part"
+    })),
     (kpisEditorRef = new TableEditor({
       mountId: "kpisEditor",
       stateKey: "kpis",
@@ -447,6 +546,7 @@ function wireCrossTabRefresh() {
       lastActors = actorsJson;
       workflowEditorRef.render();
       kpisEditorRef.render();
+      if (slaPartsEditorRef) slaPartsEditorRef.render();
     }
     if (raciRolesJson !== lastRaciRoles) {
       lastRaciRoles = raciRolesJson;

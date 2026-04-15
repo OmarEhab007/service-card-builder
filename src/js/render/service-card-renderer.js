@@ -34,9 +34,10 @@ export function renderServiceCard(state, opts = {}) {
   const support = state.support || [];
   const kpis = state.kpis || [];
   const sla = state.sla || {};
+  const slaParts = state.slaParts || [];
   const raciRoles = Array.isArray(state.raciConfig?.roles) ? state.raciConfig.roles : [];
   const root = normalizeAssetBase(opts.assetBase);
-  const logoPath = `${root}LOGO_banner.svg`;
+  const logoPath = `${root}Aassets/svg/logo-light_en.svg`;
   const bgUrl = opts.embeddedBackgroundDataUri || `${root}Background.svg`;
   const visualsUrl = opts.embeddedVisualsDataUri || `${root}Visuals.svg`;
   const brand = {
@@ -147,7 +148,6 @@ export function renderServiceCard(state, opts = {}) {
     .logo--banner {
       height: 44px;
       max-width: 200px;
-      filter: brightness(0) invert(1);
     }
     .hdr-kicker {
       font-size: 0.62rem;
@@ -851,8 +851,8 @@ export function renderServiceCard(state, opts = {}) {
 
   const logoHtml =
     typeof opts.inlineLogoSvg === "string" && opts.inlineLogoSvg.trim()
-      ? `<div class="logo-svg-wrap logo logo--banner" role="img" aria-label="CST Logo">${stripXmlProlog(opts.inlineLogoSvg)}</div>`
-      : `<img src="${logoPath}" class="logo logo--banner" alt="CST Logo" width="200" height="48">`;
+      ? `<div class="logo-svg-wrap logo logo--banner" role="img" aria-label="Damee Logo">${stripXmlProlog(opts.inlineLogoSvg)}</div>`
+      : `<img src="${logoPath}" class="logo logo--banner" alt="Damee Logo" width="200" height="48">`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -871,7 +871,7 @@ export function renderServiceCard(state, opts = {}) {
           <div class="hdr-banner-main">
             ${logoHtml}
             <div>
-              <p class="hdr-kicker">Communications, Space &amp; Technology Commission</p>
+              <p class="hdr-kicker">Damee Service Card Builder</p>
               <h1 class="hdr-banner-title">${esc(state.identity.name || "Service Card")}</h1>
             </div>
           </div>
@@ -1010,6 +1010,15 @@ export function renderServiceCard(state, opts = {}) {
         </tbody>
       </table>
       </div>
+      <h3 class="sec-subtitle">SLA parts (multi-team)</h3>
+      <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Part / phase</th><th>Responsible team</th><th>Scope</th><th>SLA duration</th><th>Target</th></tr></thead>
+        <tbody>
+      ${slaParts.map((p) => `<tr><td>${esc(p.part)}</td><td>${esc(p.team)}</td><td>${esc(p.scope)}</td><td>${esc(p.duration)}</td><td>${esc(p.target)}</td></tr>`).join("") || "<tr><td colspan='5' class='empty'>No SLA parts defined.</td></tr>"}
+        </tbody>
+      </table>
+      </div>
       <h3 class="sec-subtitle">KPIs</h3>
       <div class="table-wrap">
         <table class="data">
@@ -1021,7 +1030,7 @@ export function renderServiceCard(state, opts = {}) {
       </div>
     </section>
 
-    <footer class="ft">CST Service Card Builder · ${esc(state.identity.name || "Service Card")}</footer>
+    <footer class="ft">Damee Service Card Builder · ${esc(state.identity.name || "Service Card")}</footer>
   </div>
 </body>
 </html>`;

@@ -34,7 +34,7 @@ async function renderMinimalPortable(state) {
   const base = appAssetBase();
   let inlineLogo = null;
   try {
-    const res = await fetch(`${base}LOGO_banner.svg`, { cache: "force-cache" });
+    const res = await fetch(`${base}Aassets/svg/logo-light_en.svg`, { cache: "force-cache" });
     if (res.ok) inlineLogo = await res.text();
   } catch {
     /* ignore */

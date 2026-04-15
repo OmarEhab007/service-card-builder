@@ -151,6 +151,29 @@ export const enterpriseTemplate = {
     notif2When: "90%",
     mirrorServiceName: true
   },
+  slaParts: [
+    {
+      part: "Part 1",
+      team: "System Team",
+      scope: "Initial request validation and provisioning handoff",
+      duration: "2BD",
+      target: "Validated and assigned within SLA"
+    },
+    {
+      part: "Part 2",
+      team: "Network Team",
+      scope: "Network configuration and access setup",
+      duration: "1BD",
+      target: "Connectivity ready"
+    },
+    {
+      part: "Part 3",
+      team: "Monitoring Team",
+      scope: "Monitoring and alerting onboarding",
+      duration: "1BD",
+      target: "Production visibility enabled"
+    }
+  ],
   kpis: [
     {
       name: "% Of request completed within agreed time",

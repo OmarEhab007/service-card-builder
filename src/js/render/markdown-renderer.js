@@ -5,6 +5,7 @@ export function renderMarkdown(state) {
   const raci = state.raci || [];
   const support = state.support || [];
   const sla = state.sla || {};
+  const slaParts = state.slaParts || [];
   const kpis = state.kpis || [];
   const toRows = (rows, keys) => rows.map((row) => `| ${keys.map((key) => String(row[key] || "").replace(/\|/g, "\\|")).join(" | ")} |`).join("\n");
 
@@ -43,6 +44,11 @@ export function renderMarkdown(state) {
   md += `| Service | Requester(s) | Pre-Requisites | Support Group | Controls | Duration | Approval Notification (Who) | Approval Notification (When) |\n`;
   md += `|---|---|---|---|---|---|---|---|\n`;
   md += `| ${sla.service || ""} | ${sla.requester || ""} | ${sla.prerequisites || ""} | ${sla.supportGroup || ""} | ${sla.controls || ""} | ${sla.duration || ""} | ${sla.notif1Who || ""}; ${sla.notif2Who || ""} | ${sla.notif1When || ""}; ${sla.notif2When || ""} |\n\n`;
+
+  md += "### SLA Parts (Multi-team)\n\n";
+  md += `| Part / Phase | Responsible Team | Scope | SLA Duration | Target |\n`;
+  md += `|---|---|---|---|---|\n`;
+  md += slaParts.length ? `${toRows(slaParts, ["part", "team", "scope", "duration", "target"])}\n\n` : "| - | - | - | - | - |\n\n";
 
   md += `### KPIs\n\n| KPIs | Formula | Target | Responsibility | Frequency Measurement |\n|---|---|---|---|---|\n`;
   md += kpis.length ? `${toRows(kpis, ["name", "formula", "target", "owner", "frequency"])}\n` : "| - | - | - | - | - |\n";

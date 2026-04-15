@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CST Service Card Builder</title>
+  <title>Damee Service Card Builder</title>
+  <link rel="icon" type="image/svg+xml" href="/Aassets/fav/safari-pinned-tab.svg">
   <link rel="stylesheet" href="./src/styles/tokens.css">
   <link rel="stylesheet" href="./src/styles/fonts.css">
   <link rel="stylesheet" href="./src/styles/base.css">
@@ -15,7 +16,7 @@
   <header class="topbar">
     <div class="topbar-row topbar-row--brand">
       <div class="brand">
-        <img src="/LOGO_banner.svg" alt="CST Logo" class="brand-logo" width="180" height="40">
+        <img src="/Aassets/svg/logo-dark_en.svg" alt="Damee Logo" class="brand-logo" width="180" height="40">
         <div class="brand-meta">
           <h1>Service Card Builder</h1>
         </div>
@@ -190,9 +191,14 @@
               <span class="sla-kpi-insight__label">KPI Count</span>
               <strong id="kpiCount">0</strong>
             </div>
+            <div class="sla-kpi-insight">
+              <span class="sla-kpi-insight__label">Setup Health</span>
+              <strong id="slaHealth">Needs input</strong>
+            </div>
           </div>
+
           <fieldset class="form-fieldset">
-            <legend>Service level</legend>
+            <legend>SLA essentials</legend>
             <label class="checkbox-row">
               <input id="slaMirrorService" type="checkbox" checked>
               <span>Match Identity — Service field follows Service Name (EN)</span>
@@ -204,25 +210,48 @@
             <div class="grid two">
               <label>Service<input id="slaService" type="text" placeholder="Server Request" autocomplete="off"></label>
               <label>Requester(s)<input id="slaRequester" type="text" placeholder="IT Users" autocomplete="off"></label>
-              <label>Pre-Requisites<input id="slaPrerequisites" type="text" placeholder="-" autocomplete="off"></label>
-              <label>Support Group<input id="slaSupportGroup" type="text" placeholder="System Team" autocomplete="off"></label>
-              <label>Controls<input id="slaControls" type="text" placeholder="Multiple Approvals Required" autocomplete="off"></label>
+              <label>Support Group(s)<input id="slaSupportGroup" type="text" placeholder="System Team, Network Team" autocomplete="off"></label>
               <label>Duration<input id="slaDuration" type="text" value="5BD" autocomplete="off"></label>
             </div>
-          </fieldset>
-          <fieldset class="form-fieldset">
-            <legend>Approval notifications</legend>
-            <div class="grid two">
-              <label>Notification 1 — who<input id="notif1Who" type="text" placeholder="System Team Supervisor" autocomplete="off"></label>
-              <label>Notification 1 — when<input id="notif1When" type="text" placeholder="75%" autocomplete="off"></label>
-              <label>Notification 2 — who<input id="notif2Who" type="text" placeholder="System Team Manager" autocomplete="off"></label>
-              <label>Notification 2 — when<input id="notif2When" type="text" placeholder="90%" autocomplete="off"></label>
+            <p class="hint">You can assign multiple teams using commas (example: <em>System Team, Network Team, Monitoring Team</em>).</p>
+            <div class="sla-kpi-actions">
+              <span class="hint">Quick duration:</span>
+              <button id="btnDuration3BD" type="button" class="btn btn-secondary btn-sm">3BD</button>
+              <button id="btnDuration5BD" type="button" class="btn btn-secondary btn-sm">5BD</button>
+              <button id="btnDuration10BD" type="button" class="btn btn-secondary btn-sm">10BD</button>
             </div>
           </fieldset>
+
+          <details class="sla-advanced">
+            <summary>Advanced SLA and escalation settings</summary>
+            <fieldset class="form-fieldset">
+              <legend>Service controls</legend>
+              <div class="grid two">
+                <label>Pre-Requisites<input id="slaPrerequisites" type="text" placeholder="-" autocomplete="off"></label>
+                <label>Controls<input id="slaControls" type="text" placeholder="Multiple Approvals Required" autocomplete="off"></label>
+              </div>
+            </fieldset>
+            <fieldset class="form-fieldset">
+              <legend>Approval notifications</legend>
+              <div class="grid two">
+                <label>Notification 1 — who<input id="notif1Who" type="text" placeholder="System Team Supervisor" autocomplete="off"></label>
+                <label>Notification 1 — when<input id="notif1When" type="text" placeholder="75%" autocomplete="off"></label>
+                <label>Notification 2 — who<input id="notif2Who" type="text" placeholder="System Team Manager" autocomplete="off"></label>
+                <label>Notification 2 — when<input id="notif2When" type="text" placeholder="90%" autocomplete="off"></label>
+              </div>
+            </fieldset>
+          </details>
           <p id="slaNotificationPreview" class="hint sla-kpi-note">Notifications preview will appear here.</p>
+          <h3>SLA Parts (multi-team split)</h3>
+          <p class="hint panel-intro">Split the request into parts/phases. Each part can have its own responsible team and SLA duration.</p>
+          <div class="sla-kpi-actions">
+            <button id="btnSlaSplitByTeams" type="button" class="btn btn-secondary btn-sm">Generate parts from teams</button>
+          </div>
+          <div id="slaPartsEditor" class="table-editor"></div>
           <h3>KPIs</h3>
           <div class="sla-kpi-actions">
             <button id="btnKpiStarterPack" type="button" class="btn btn-secondary btn-sm">Add KPI starter pack</button>
+            <button id="btnKpiAddBlank" type="button" class="btn btn-secondary btn-sm">Add blank KPI row</button>
           </div>
           <div id="kpisEditor" class="table-editor"></div>
         </section>

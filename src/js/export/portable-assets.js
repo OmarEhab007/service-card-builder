@@ -78,7 +78,7 @@ export async function buildSelfContainedRenderOptions() {
   const base = getAppAssetBase();
 
   const [logoSvg, bgSvg, visualsSvg, fontCssRaw] = await Promise.all([
-    fetchText(`${base}LOGO_banner.svg`),
+    fetchText(`${base}Aassets/svg/logo-light_en.svg`),
     fetchText(`${base}Background.svg`),
     fetchText(`${base}Visuals.svg`),
     fetchText(`${base}fonts/loew-face.css`)

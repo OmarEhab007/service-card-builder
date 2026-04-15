@@ -1,6 +1,6 @@
-# Service Card Builder
+# Damee Service Card Builder
 
-Service Card Builder is a Vite-powered web app for creating and exporting service cards.
+Damee Service Card Builder is a Vite-powered web app for creating and exporting service cards.
 
 ## Local Development
 

@@ -87,6 +87,7 @@ function normalizeStateShape(next) {
   if (!Array.isArray(next.fields)) next.fields = [];
   if (!Array.isArray(next.raci)) next.raci = [];
   if (!Array.isArray(next.support)) next.support = [];
+  if (!Array.isArray(next.slaParts)) next.slaParts = [];
   if (!Array.isArray(next.kpis)) next.kpis = [];
   if (!next.sla || typeof next.sla !== "object") next.sla = {};
   const svc = next.sla.service || "";
@@ -133,6 +134,7 @@ const state = {
   fields: [],
   raci: [],
   support: [],
+  slaParts: [],
   sla: {
     service: "Server Request",
     requester: "",
