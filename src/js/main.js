@@ -8,6 +8,7 @@ import { enterpriseTemplate } from "./state/template.js";
 import { exportHtml, exportMarkdown, printPdf } from "./export/exporters.js";
 
 let svcDatePicker = null;
+let isSyncingFormState = false;
 
 function initSvcDatePicker() {
   const el = $("#svcDate");
@@ -16,12 +17,14 @@ function initSvcDatePicker() {
     allowInput: true,
     disableMobile: true,
     onChange(_dates, dateStr) {
+      if (isSyncingFormState) return;
       patchState((s) => {
         s.identity.date = dateStr;
       });
     }
   });
   el.addEventListener("change", () => {
+    if (isSyncingFormState) return;
     patchState((s) => {
       s.identity.date = el.value.trim();
     });
@@ -337,13 +340,18 @@ function fillFormFromState() {
   const dateVal = state.identity.date || "";
   const dateEl = $("#svcDate");
   if (document.activeElement !== dateEl) {
-    dateEl.value = dateVal;
-    if (svcDatePicker) {
-      if (dateVal) {
-        svcDatePicker.setDate(dateVal, false, "Y-m-d");
-      } else {
-        svcDatePicker.clear();
+    isSyncingFormState = true;
+    try {
+      dateEl.value = dateVal;
+      if (svcDatePicker) {
+        if (dateVal) {
+          svcDatePicker.setDate(dateVal, false, "Y-m-d");
+        } else {
+          svcDatePicker.clear();
+        }
       }
+    } finally {
+      isSyncingFormState = false;
     }
   }
 

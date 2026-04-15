@@ -85,17 +85,26 @@ export class TableEditor {
     return 1.25;
   }
 
+  _ensureRows(state, key = this.stateKey) {
+    if (!Array.isArray(state[key])) {
+      state[key] = [];
+    }
+    return state[key];
+  }
+
   updateCell(rowIndex, key, value) {
     patchState((state) => {
-      state[this.stateKey][rowIndex][key] = value;
+      const rows = this._ensureRows(state);
+      if (!rows[rowIndex]) rows[rowIndex] = { ...this.defaultRow };
+      rows[rowIndex][key] = value;
     });
   }
 
   addRow() {
     patchState((state) => {
-      state[this.stateKey].push({ ...this.defaultRow });
+      this._ensureRows(state).push({ ...this.defaultRow });
       if (this.pairedStateKey && this.pairedDefaultRow) {
-        state[this.pairedStateKey].push({ ...this.pairedDefaultRow });
+        this._ensureRows(state, this.pairedStateKey).push({ ...this.pairedDefaultRow });
       }
     });
     const newIndex = getState()[this.stateKey].length - 1;
@@ -105,9 +114,9 @@ export class TableEditor {
 
   removeRow(rowIndex) {
     patchState((state) => {
-      state[this.stateKey].splice(rowIndex, 1);
+      this._ensureRows(state).splice(rowIndex, 1);
       if (this.pairedStateKey) {
-        state[this.pairedStateKey].splice(rowIndex, 1);
+        this._ensureRows(state, this.pairedStateKey).splice(rowIndex, 1);
       }
     });
     this.render();
@@ -115,11 +124,14 @@ export class TableEditor {
 
   duplicateRow(rowIndex) {
     patchState((state) => {
-      const copy = JSON.parse(JSON.stringify(state[this.stateKey][rowIndex]));
-      state[this.stateKey].splice(rowIndex + 1, 0, copy);
+      const rows = this._ensureRows(state);
+      if (!rows[rowIndex]) return;
+      const copy = JSON.parse(JSON.stringify(rows[rowIndex]));
+      rows.splice(rowIndex + 1, 0, copy);
       if (this.pairedStateKey) {
-        const pCopy = JSON.parse(JSON.stringify(state[this.pairedStateKey][rowIndex]));
-        state[this.pairedStateKey].splice(rowIndex + 1, 0, pCopy);
+        const pairedRows = this._ensureRows(state, this.pairedStateKey);
+        const pCopy = JSON.parse(JSON.stringify(pairedRows[rowIndex] || this.pairedDefaultRow || {}));
+        pairedRows.splice(rowIndex + 1, 0, pCopy);
       }
     });
     this.render();
