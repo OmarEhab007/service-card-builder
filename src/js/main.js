@@ -91,6 +91,143 @@ function bindSlaFields() {
   });
 }
 
+function parsePercent(value) {
+  const match = String(value || "").match(/(\d+(?:\.\d+)?)/);
+  return match ? Number(match[1]) : null;
+}
+
+function parseDurationBusinessDays(value) {
+  const match = String(value || "").trim().match(/(\d+(?:\.\d+)?)/);
+  return match ? Number(match[1]) : null;
+}
+
+function inferSupportGroup(state) {
+  if (state.sla?.supportGroup?.trim()) return state.sla.supportGroup.trim();
+  const firstSupportGroup = (state.support || []).find((row) => String(row.supportGroup || "").trim());
+  if (firstSupportGroup) return firstSupportGroup.supportGroup.trim();
+  const systemActor = (state.actors || []).find((row) => /system/i.test(String(row.name || "")));
+  return systemActor?.name?.trim() || "";
+}
+
+function renderSlaKpiInsights() {
+  const state = getState();
+  const sla = state.sla || {};
+  const durationDays = parseDurationBusinessDays(sla.duration);
+  const n1 = parsePercent(sla.notif1When);
+  const n2 = parsePercent(sla.notif2When);
+  const gap = n1 != null && n2 != null ? n2 - n1 : null;
+
+  const durationEl = $("#slaDurationDays");
+  const gapEl = $("#slaNotifGap");
+  const kpiCountEl = $("#kpiCount");
+  const notifPreview = $("#slaNotificationPreview");
+
+  if (durationEl) {
+    durationEl.textContent = durationDays != null ? `${durationDays} business day${durationDays === 1 ? "" : "s"}` : "Not set";
+  }
+  if (gapEl) {
+    gapEl.textContent = gap != null ? `${gap}%` : "Not set";
+  }
+  if (kpiCountEl) {
+    const count = Array.isArray(state.kpis) ? state.kpis.length : 0;
+    kpiCountEl.textContent = String(count);
+  }
+  if (notifPreview) {
+    const who1 = sla.notif1Who || "First owner";
+    const when1 = sla.notif1When || "first threshold";
+    const who2 = sla.notif2Who || "Second owner";
+    const when2 = sla.notif2When || "second threshold";
+    notifPreview.textContent = `Escalation: ${who1} at ${when1}, then ${who2} at ${when2}.`;
+  }
+}
+
+function bindSlaKpiActions() {
+  const smartFillBtn = $("#btnSlaSmartFill");
+  if (smartFillBtn) {
+    smartFillBtn.addEventListener("click", () => {
+      patchState((state) => {
+        if (!state.sla) state.sla = {};
+        if (!state.sla.service || state.sla.mirrorServiceName !== false) {
+          state.sla.service = state.identity?.name || "";
+        }
+        if (!state.sla.requester?.trim()) {
+          state.sla.requester = "IT Users";
+        }
+        if (!state.sla.supportGroup?.trim()) {
+          state.sla.supportGroup = inferSupportGroup(state);
+        }
+        if (!state.sla.controls?.trim()) {
+          state.sla.controls = "Multiple Approvals Required";
+        }
+        if (!state.sla.prerequisites?.trim()) {
+          state.sla.prerequisites = "-";
+        }
+      });
+      fillFormFromState();
+    });
+  }
+
+  const autoNotifBtn = $("#btnSlaAutoNotif");
+  if (autoNotifBtn) {
+    autoNotifBtn.addEventListener("click", () => {
+      patchState((state) => {
+        if (!state.sla) state.sla = {};
+        const supportOwner = inferSupportGroup(state) || "Support Team";
+        if (!state.sla.notif1Who?.trim()) state.sla.notif1Who = `${supportOwner} supervisor`;
+        if (!state.sla.notif2Who?.trim()) state.sla.notif2Who = `${supportOwner} manager`;
+        state.sla.notif1When = "75%";
+        state.sla.notif2When = "90%";
+      });
+      fillFormFromState();
+    });
+  }
+
+  const starterPackBtn = $("#btnKpiStarterPack");
+  if (starterPackBtn) {
+    starterPackBtn.addEventListener("click", () => {
+      patchState((state) => {
+        const owner = inferSupportGroup(state) || "System Team";
+        const existingNames = new Set((state.kpis || []).map((kpi) => String(kpi.name || "").toLowerCase().trim()));
+        const starters = [
+          {
+            name: "% Of requests completed within agreed time",
+            formula: "# completed within SLA / total # of requests",
+            target: ">= 95%",
+            owner,
+            frequency: "Monthly"
+          },
+          {
+            name: "Average fulfillment lead time",
+            formula: "sum of request lead time / total # of requests",
+            target: "<= 5 business days",
+            owner,
+            frequency: "Monthly"
+          },
+          {
+            name: "Reopened request ratio",
+            formula: "# reopened requests / total # of requests",
+            target: "<= 3%",
+            owner,
+            frequency: "Quarterly"
+          }
+        ];
+        if (!Array.isArray(state.kpis)) state.kpis = [];
+        starters.forEach((row) => {
+          const key = row.name.toLowerCase().trim();
+          if (!existingNames.has(key)) {
+            state.kpis.push(row);
+            existingNames.add(key);
+          }
+        });
+      });
+      if (typeof kpisEditorRef?.render === "function") {
+        kpisEditorRef.render();
+      }
+      renderSlaKpiInsights();
+    });
+  }
+}
+
 function setControlIfNotFocused(el, value, attr = "value") {
   if (!el) return;
   if (document.activeElement === el) return;
@@ -143,6 +280,7 @@ function fillFormFromState() {
   setControlIfNotFocused($("#notif2Who"), sla.notif2Who || "");
   setControlIfNotFocused($("#notif2When"), sla.notif2When || "");
 
+  renderSlaKpiInsights();
 }
 
 function loadEnterpriseExample() {
@@ -276,7 +414,7 @@ function initEditors() {
           optionsFromActors: true,
           placeholder: "Actor name or free text"
         },
-        { key: "frequency", label: "Frequency Measurement" }
+        { key: "frequency", label: "Frequency Measurement", type: "select", options: ["Daily", "Weekly", "Monthly", "Quarterly", "Yearly"] }
       ],
       defaultRow: { name: "", formula: "", target: "", owner: "", frequency: "Monthly" },
       emptyMessage:
@@ -367,6 +505,7 @@ function init() {
   fillFormFromState();
   bindIdentityFields();
   bindSlaFields();
+  bindSlaKpiActions();
   initEditors();
   wireCrossTabRefresh();
   wireTopActions();

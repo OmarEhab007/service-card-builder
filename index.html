@@ -113,12 +113,30 @@
         <section class="panel" data-panel="sla">
           <h2>SLA & KPIs</h2>
           <p class="hint panel-intro">SLA block text appears on the printed card. KPI “Responsibility” can pick from Actors or any free-text owner.</p>
+          <div class="sla-kpi-insights" aria-live="polite">
+            <div class="sla-kpi-insight">
+              <span class="sla-kpi-insight__label">SLA Duration</span>
+              <strong id="slaDurationDays">-</strong>
+            </div>
+            <div class="sla-kpi-insight">
+              <span class="sla-kpi-insight__label">Notification Gap</span>
+              <strong id="slaNotifGap">-</strong>
+            </div>
+            <div class="sla-kpi-insight">
+              <span class="sla-kpi-insight__label">KPI Count</span>
+              <strong id="kpiCount">0</strong>
+            </div>
+          </div>
           <fieldset class="form-fieldset">
             <legend>Service level</legend>
             <label class="checkbox-row">
               <input id="slaMirrorService" type="checkbox" checked>
               <span>Match Identity — Service field follows Service Name (EN)</span>
             </label>
+            <div class="sla-kpi-actions">
+              <button id="btnSlaSmartFill" type="button" class="btn btn-secondary btn-sm">Smart-fill SLA</button>
+              <button id="btnSlaAutoNotif" type="button" class="btn btn-secondary btn-sm">Auto notifications</button>
+            </div>
             <div class="grid two">
               <label>Service<input id="slaService" type="text" placeholder="Server Request" autocomplete="off"></label>
               <label>Requester(s)<input id="slaRequester" type="text" placeholder="IT Users" autocomplete="off"></label>
@@ -137,7 +155,11 @@
               <label>Notification 2 — when<input id="notif2When" type="text" placeholder="90%" autocomplete="off"></label>
             </div>
           </fieldset>
+          <p id="slaNotificationPreview" class="hint sla-kpi-note">Notifications preview will appear here.</p>
           <h3>KPIs</h3>
+          <div class="sla-kpi-actions">
+            <button id="btnKpiStarterPack" type="button" class="btn btn-secondary btn-sm">Add KPI starter pack</button>
+          </div>
           <div id="kpisEditor" class="table-editor"></div>
         </section>
       </div>

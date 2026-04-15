@@ -331,6 +331,45 @@
   margin-top: 2px;
 }
 
+.sla-kpi-insights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.sla-kpi-insight {
+  border: 1px solid var(--neutral-200);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  padding: 8px 10px;
+}
+
+.sla-kpi-insight__label {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--neutral-500);
+  margin-bottom: 2px;
+  font-weight: 700;
+}
+
+.sla-kpi-insight strong {
+  font-size: 13px;
+  color: var(--brand-ink);
+}
+
+.sla-kpi-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sla-kpi-note {
+  margin-top: -2px;
+  font-size: 11px;
+}
+
 .fulfillment-cards {
   display: grid;
   gap: 14px;
