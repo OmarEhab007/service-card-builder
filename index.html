@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CST Service Card Builder</title>
+  <link rel="stylesheet" href="./src/styles/tokens.css">
+  <link rel="stylesheet" href="./src/styles/fonts.css">
+  <link rel="stylesheet" href="./src/styles/base.css">
+  <link rel="stylesheet" href="./src/styles/layout.css">
+  <link rel="stylesheet" href="./src/styles/components.css">
+  <link rel="stylesheet" href="./src/styles/print.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-row topbar-row--brand">
+      <div class="brand">
+        <img src="/LOGO_banner.svg" alt="CST Logo" class="brand-logo" width="180" height="40">
+        <div class="brand-meta">
+          <h1>Service Card Builder</h1>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-row topbar-row--toolbar" aria-label="Document actions">
+      <div class="topbar-actions">
+        <button id="btnPrint" type="button" class="btn btn-primary btn-sm">Print PDF</button>
+        <button id="btnTemplate" type="button" class="btn btn-secondary btn-sm" title="Replace current draft with the built-in example">Load example</button>
+        <button id="btnSave" type="button" class="btn btn-secondary btn-sm">Save JSON</button>
+        <button id="btnLoad" type="button" class="btn btn-secondary btn-sm">Load JSON</button>
+        <button id="btnExportHtml" type="button" class="btn btn-secondary btn-sm">Export HTML</button>
+        <button id="btnExportMd" type="button" class="btn btn-secondary btn-sm">Export MD</button>
+        <input id="fileLoader" type="file" accept="application/json" hidden>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <div class="editor-pane">
+      <nav class="section-tabs" id="sectionTabs">
+        <button class="section-tab active" type="button" data-panel="identity">Identity</button>
+        <button class="section-tab" type="button" data-panel="actors">Actors</button>
+        <button class="section-tab" type="button" data-panel="workflow">Workflow</button>
+        <button class="section-tab" type="button" data-panel="fields">Form Fields</button>
+        <button class="section-tab" type="button" data-panel="raci">RACI</button>
+        <button class="section-tab" type="button" data-panel="support">Support</button>
+        <button class="section-tab" type="button" data-panel="sla">SLA & KPIs</button>
+      </nav>
+
+      <div class="panels" id="panels">
+        <section class="panel active" data-panel="identity">
+          <h2>Service Identity</h2>
+          <p class="hint panel-intro">This is the canonical service name and description for exports and print. The English service name also drives the SLA “Service” field when “Match Identity name” is enabled on the SLA tab.</p>
+          <fieldset class="form-fieldset">
+            <legend>Names</legend>
+            <div class="grid two">
+              <label>Service Name (EN)<input id="svcName" type="text" placeholder="Server Request" autocomplete="off"></label>
+              <label>Service Name (AR)<input id="svcNameAr" dir="rtl" type="text" autocomplete="off"></label>
+            </div>
+          </fieldset>
+          <fieldset class="form-fieldset">
+            <legend>Descriptions</legend>
+            <label>Description (EN)<textarea id="svcDesc" rows="3" placeholder="Short summary for stakeholders"></textarea></label>
+            <label>Description (AR)<textarea id="svcDescAr" dir="rtl" rows="2" placeholder="الوصف"></textarea></label>
+          </fieldset>
+          <fieldset class="form-fieldset">
+            <legend>Classification</legend>
+            <div class="grid three">
+              <label>Version<input id="svcVersion" type="text" value="1.0" inputmode="decimal" autocomplete="off"></label>
+              <label>Category<input id="svcCategory" type="text" value="Infrastructure" autocomplete="organization-title"></label>
+              <label>Status<input id="svcStatus" type="text" value="Active" autocomplete="off"></label>
+            </div>
+          </fieldset>
+          <fieldset class="form-fieldset">
+            <legend>Ownership &amp; reference</legend>
+            <div class="grid three">
+              <label>Owner<input id="svcOwner" type="text" placeholder="Team or person" autocomplete="name"></label>
+              <label>Effective date<input id="svcDate" type="text" placeholder="Pick or type YYYY-MM-DD" autocomplete="off"></label>
+              <label>Service ID<input id="svcId" type="text" placeholder="Internal ID" autocomplete="off"></label>
+            </div>
+          </fieldset>
+        </section>
+
+        <section class="panel" data-panel="actors">
+          <h2>Actors</h2>
+          <p class="hint panel-intro">People and roles referenced in workflow and RACI. Tab through cells quickly; use Copy to clone a similar row.</p>
+          <div id="actorsEditor" class="table-editor"></div>
+        </section>
+
+        <section class="panel" data-panel="workflow">
+          <h2>Workflow</h2>
+          <p class="hint panel-intro">Order defines the printed sequence. Each step creates a matching RACI row; edit step text here (not on RACI). Actor suggests names from the Actors tab — you can still type teams not listed.</p>
+          <div id="workflowEditor" class="table-editor"></div>
+        </section>
+
+        <section class="panel" data-panel="fields">
+          <h2>Form Fields</h2>
+          <p class="hint panel-intro">Each row is one question on the request form. Field types and mandatory flags follow the enterprise template; use Dependency when a field only applies under conditions.</p>
+          <div id="fieldsEditor" class="table-editor"></div>
+        </section>
+
+        <section class="panel" data-panel="raci">
+          <h2>RACI Matrix</h2>
+          <p class="hint panel-intro">Rows and STEP labels mirror the Workflow tab. RACI columns are generated from Actor names, so update Actors first when responsibilities change.</p>
+          <div id="raciEditor" class="table-editor"></div>
+        </section>
+
+        <section class="panel" data-panel="support">
+          <h2>Support Groups</h2>
+          <p class="hint panel-intro">Operational contacts for escalation. Align names with actors or teams where possible. Wider columns scroll horizontally; actions stay pinned on the right.</p>
+          <div id="supportEditor" class="table-editor"></div>
+        </section>
+
+        <section class="panel" data-panel="sla">
+          <h2>SLA & KPIs</h2>
+          <p class="hint panel-intro">SLA block text appears on the printed card. KPI “Responsibility” can pick from Actors or any free-text owner.</p>
+          <fieldset class="form-fieldset">
+            <legend>Service level</legend>
+            <label class="checkbox-row">
+              <input id="slaMirrorService" type="checkbox" checked>
+              <span>Match Identity — Service field follows Service Name (EN)</span>
+            </label>
+            <div class="grid two">
+              <label>Service<input id="slaService" type="text" placeholder="Server Request" autocomplete="off"></label>
+              <label>Requester(s)<input id="slaRequester" type="text" placeholder="IT Users" autocomplete="off"></label>
+              <label>Pre-Requisites<input id="slaPrerequisites" type="text" placeholder="-" autocomplete="off"></label>
+              <label>Support Group<input id="slaSupportGroup" type="text" placeholder="System Team" autocomplete="off"></label>
+              <label>Controls<input id="slaControls" type="text" placeholder="Multiple Approvals Required" autocomplete="off"></label>
+              <label>Duration<input id="slaDuration" type="text" value="5BD" autocomplete="off"></label>
+            </div>
+          </fieldset>
+          <fieldset class="form-fieldset">
+            <legend>Approval notifications</legend>
+            <div class="grid two">
+              <label>Notification 1 — who<input id="notif1Who" type="text" placeholder="System Team Supervisor" autocomplete="off"></label>
+              <label>Notification 1 — when<input id="notif1When" type="text" placeholder="75%" autocomplete="off"></label>
+              <label>Notification 2 — who<input id="notif2Who" type="text" placeholder="System Team Manager" autocomplete="off"></label>
+              <label>Notification 2 — when<input id="notif2When" type="text" placeholder="90%" autocomplete="off"></label>
+            </div>
+          </fieldset>
+          <h3>KPIs</h3>
+          <div id="kpisEditor" class="table-editor"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="./src/js/main.js"></script>
+</body>
+</html>

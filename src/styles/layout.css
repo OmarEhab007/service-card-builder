@@ -1,0 +1,152 @@
+.topbar {
+  --topbar-height: auto;
+  min-height: 0;
+  padding: 10px 16px 12px;
+  background: rgba(248, 250, 252, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--neutral-200);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.topbar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.topbar-row--brand {
+  justify-content: flex-start;
+}
+
+.topbar-row--toolbar {
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.brand-logo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+}
+
+.brand-meta h1 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  line-height: 1.25;
+}
+
+.brand-tagline {
+  font-size: 11px;
+  color: var(--neutral-500);
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.topbar-actions .btn {
+  flex-shrink: 0;
+}
+
+main.app-shell {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-pane {
+  flex: 1;
+  min-height: 0;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.section-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--neutral-200);
+}
+
+.panels {
+  overflow-y: auto;
+  padding: 14px;
+  min-height: 0;
+}
+
+.panel {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel.active {
+  display: flex;
+}
+
+.panel h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  margin: 4px 0 0;
+}
+
+.grid {
+  display: grid;
+  gap: 10px;
+}
+
+.grid.two {
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid.three {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+@media (max-width: 860px) {
+  .grid.two,
+  .grid.three {
+    grid-template-columns: 1fr;
+  }
+
+  .brand-logo {
+    height: 32px;
+  }
+
+  .editor-pane {
+    max-height: none;
+  }
+
+  .topbar-row--brand {
+    flex-wrap: wrap;
+  }
+}

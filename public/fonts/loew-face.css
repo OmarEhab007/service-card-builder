@@ -1,0 +1,65 @@
+/* Loew Next Arabic — files live alongside this sheet in /public/fonts/ */
+
+@font-face {
+  font-family: "Loew Next Arabic";
+  src: url("Loew Next Arabic Thin.otf") format("opentype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Loew Next Arabic";
+  src: url("Loew Next Arabic Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Loew Next Arabic";
+  src: url("Loew Next Arabic.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Loew Next Arabic";
+  src: url("Loew Next Arabic Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Loew Next Arabic";
+  src: url("Loew Next Arabic Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Loew Next Arabic";
+  src: url("Loew Next Arabic ExtraBold.otf") format("opentype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Loew Next Arabic";
+  src: url("Loew Next Arabic Heavy.otf") format("opentype");
+  font-weight: 850;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Loew Next Arabic";
+  src: url("Loew Next Arabic Black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}

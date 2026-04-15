@@ -1,0 +1,15 @@
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  body {
+    background: none !important;
+    background-image: none !important;
+  }
+
+  body::after {
+    display: none !important;
+  }
+}

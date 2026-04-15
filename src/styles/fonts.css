@@ -1,0 +1,42 @@
+@import url("/fonts/loew-face.css");
+
+html {
+  background-color: var(--neutral-50);
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--neutral-900);
+  background-image:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.94) 0%, rgba(241, 245, 249, 0.88) 55%, rgba(238, 242, 247, 0.92) 100%),
+    url("/Background.svg");
+  background-size: cover, cover;
+  background-position: center top, center top;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* Decorative art layer (Visuals.svg) */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: url("/Visuals.svg") no-repeat right 6% bottom 10%;
+  background-size: min(520px, 46vw);
+  opacity: 0.42;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body > header,
+body > main {
+  position: relative;
+  z-index: 1;
+}
+
+[dir="rtl"],
+input[dir="rtl"],
+textarea[dir="rtl"],
+.font-ar {
+  font-family: var(--font-ar);
+}
