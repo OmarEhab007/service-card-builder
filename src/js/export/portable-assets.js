@@ -8,10 +8,14 @@ export function getAppAssetBase() {
   return new URL(base, window.location.origin).href.replace(/\/?$/, "/");
 }
 
-async function fetchText(url) {
-  const res = await fetch(url, { cache: "force-cache" });
-  if (!res.ok) throw new Error(`Failed to load ${url}`);
-  return res.text();
+async function fetchTextOptional(url) {
+  try {
+    const res = await fetch(url, { cache: "force-cache" });
+    if (!res.ok) return null;
+    return await res.text();
+  } catch {
+    return null;
+  }
 }
 
 function arrayBufferToBase64(buffer) {
@@ -77,20 +81,42 @@ export function svgTextToCssUrl(svgText) {
 export async function buildSelfContainedRenderOptions() {
   const base = getAppAssetBase();
 
-  const [logoSvg, bgSvg, visualsSvg, fontCssRaw] = await Promise.all([
-    fetchText(`${base}Aassets/svg/logo-light_en.svg`),
-    fetchText(`${base}Background.svg`),
-    fetchText(`${base}Visuals.svg`),
-    fetchText(`${base}fonts/loew-face.css`)
+  // Keep export resilient in production even when optional decorative assets are absent.
+  const logoCandidates = [
+    `${base}Aassets/svg/logo-light_en.svg`,
+    `${base}assets/svg/logo-light_en.svg`,
+    `${base}Aassets/svg/logo-light.svg`,
+    `${base}assets/svg/logo-light.svg`
+  ];
+  let logoSvg = null;
+  for (const candidate of logoCandidates) {
+    logoSvg = await fetchTextOptional(candidate);
+    if (logoSvg) break;
+  }
+  if (!logoSvg) {
+    throw new Error("Logo asset could not be loaded for print/export.");
+  }
+
+  const [bgSvg, visualsSvg, fontCssRaw] = await Promise.all([
+    fetchTextOptional(`${base}Background.svg`),
+    fetchTextOptional(`${base}Visuals.svg`),
+    fetchTextOptional(`${base}fonts/loew-face.css`)
   ]);
 
-  const embeddedFontCss = await inlineFontUrlsInCss(fontCssRaw, `${base}fonts/`);
+  let embeddedFontCss = "";
+  if (fontCssRaw) {
+    try {
+      embeddedFontCss = await inlineFontUrlsInCss(fontCssRaw, `${base}fonts/`);
+    } catch {
+      embeddedFontCss = "";
+    }
+  }
 
   return {
     assetBase: "./",
     inlineLogoSvg: logoSvg,
-    embeddedBackgroundDataUri: svgTextToCssUrl(bgSvg),
-    embeddedVisualsDataUri: svgTextToCssUrl(visualsSvg),
+    ...(bgSvg ? { embeddedBackgroundDataUri: svgTextToCssUrl(bgSvg) } : {}),
+    ...(visualsSvg ? { embeddedVisualsDataUri: svgTextToCssUrl(visualsSvg) } : {}),
     embeddedFontCss
   };
 }
