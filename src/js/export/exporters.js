@@ -1,7 +1,7 @@
 import { renderServiceCard } from "../render/service-card-renderer.js";
 import { renderMarkdown } from "../render/markdown-renderer.js";
 import { downloadFile } from "../utils/dom.js";
-import { buildSelfContainedRenderOptions, getAppAssetBase } from "./portable-assets.js";
+import { BUNDLED_FAV_LOGO_URL, buildSelfContainedRenderOptions, getAppAssetBase } from "./portable-assets.js";
 
 function appAssetBase() {
   return getAppAssetBase();
@@ -35,7 +35,7 @@ async function renderMinimalPortable(state) {
   let inlineLogo = null;
   let inlineLogoDataUrl = null;
   try {
-    const res = await fetch(`${base}Aassets/fav/safari-pinned-tab.svg`, { cache: "force-cache" });
+    const res = await fetch(BUNDLED_FAV_LOGO_URL, { cache: "force-cache" });
     if (res.ok) inlineLogo = await res.text();
   } catch {
     /* ignore */

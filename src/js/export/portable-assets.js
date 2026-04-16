@@ -3,6 +3,8 @@
  * is moved outside the project (no relative links to /public).
  */
 
+export const BUNDLED_FAV_LOGO_URL = new URL("../../../Aassets/fav/safari-pinned-tab.svg", import.meta.url).href;
+
 export function getAppAssetBase() {
   const base = import.meta.env.BASE_URL || "/";
   return new URL(base, window.location.origin).href.replace(/\/?$/, "/");
@@ -94,6 +96,7 @@ export async function buildSelfContainedRenderOptions() {
 
   // Keep export resilient in production even when optional decorative assets are absent.
   const logoCandidates = [
+    BUNDLED_FAV_LOGO_URL,
     `${base}Aassets/fav/safari-pinned-tab.svg`,
     `${base}assets/safari-pinned-tab.svg`,
     `${base}Aassets/svg/logo-light_en.svg`,

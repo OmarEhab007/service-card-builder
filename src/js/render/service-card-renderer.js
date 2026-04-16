@@ -4,6 +4,7 @@ import { getActorPalette, uniqueWorkflowActors, outcomeTone } from "./actor-colo
 /** Match app tokens — Loew @font-face loaded via link to fonts/loew-face.css */
 const FONT_STACK = '"Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif';
 const FONT_AR_STACK = '"Loew Next Arabic", "Segoe UI", "Arabic UI Text", Tahoma, sans-serif';
+const DEFAULT_FAV_LOGO_URL = new URL("../../../Aassets/fav/safari-pinned-tab.svg", import.meta.url).href;
 
 /** Strip XML prolog so inline SVG is valid inside HTML. */
 function stripXmlProlog(svg) {
@@ -38,7 +39,7 @@ export function renderServiceCard(state, opts = {}) {
   const slaParts = state.slaParts || [];
   const raciRoles = Array.isArray(state.raciConfig?.roles) ? state.raciConfig.roles : [];
   const root = normalizeAssetBase(opts.assetBase);
-  const logoPath = `${root}Aassets/fav/safari-pinned-tab.svg`;
+  const logoPath = DEFAULT_FAV_LOGO_URL || `${root}Aassets/fav/safari-pinned-tab.svg`;
   const bgUrl = opts.embeddedBackgroundDataUri || `${root}Background.svg`;
   const visualsUrl = opts.embeddedVisualsDataUri || `${root}Visuals.svg`;
   const brand = {
