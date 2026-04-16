@@ -35,10 +35,18 @@ async function renderMinimalPortable(state) {
   let inlineLogo = null;
   let inlineLogoDataUrl = null;
   try {
-    const res = await fetch(`${base}Aassets/svg/logo-light_en.svg`, { cache: "force-cache" });
+    const res = await fetch(`${base}Aassets/fav/safari-pinned-tab.svg`, { cache: "force-cache" });
     if (res.ok) inlineLogo = await res.text();
   } catch {
     /* ignore */
+  }
+  if (!inlineLogo) {
+    try {
+      const res = await fetch(`${base}assets/safari-pinned-tab.svg`, { cache: "force-cache" });
+      if (res.ok) inlineLogo = await res.text();
+    } catch {
+      /* ignore */
+    }
   }
   if (!inlineLogo) {
     try {

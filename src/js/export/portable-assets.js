@@ -94,6 +94,8 @@ export async function buildSelfContainedRenderOptions() {
 
   // Keep export resilient in production even when optional decorative assets are absent.
   const logoCandidates = [
+    `${base}Aassets/fav/safari-pinned-tab.svg`,
+    `${base}assets/safari-pinned-tab.svg`,
     `${base}Aassets/svg/logo-light_en.svg`,
     `${base}assets/svg/logo-light_en.svg`,
     `${base}Aassets/svg/logo-light.svg`,
