@@ -33,15 +33,33 @@ function whenPrintDocumentReady(doc) {
 async function renderMinimalPortable(state) {
   const base = appAssetBase();
   let inlineLogo = null;
+  let inlineLogoDataUrl = null;
   try {
     const res = await fetch(`${base}Aassets/svg/logo-light_en.svg`, { cache: "force-cache" });
     if (res.ok) inlineLogo = await res.text();
   } catch {
     /* ignore */
   }
+  if (!inlineLogo) {
+    try {
+      const res = await fetch(`${base}logo.png`, { cache: "force-cache" });
+      if (res.ok) {
+        const buf = await res.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+        let binary = "";
+        for (let i = 0; i < bytes.length; i += 0x8000) {
+          binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+        }
+        inlineLogoDataUrl = `data:image/png;base64,${btoa(binary)}`;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
   return renderServiceCard(state, {
     assetBase: "./",
-    inlineLogoSvg: inlineLogo || undefined
+    inlineLogoSvg: inlineLogo || undefined,
+    inlineLogoDataUrl: inlineLogoDataUrl || undefined
   });
 }
 

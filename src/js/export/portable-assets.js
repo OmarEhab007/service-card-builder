@@ -28,6 +28,17 @@ function arrayBufferToBase64(buffer) {
   return btoa(binary);
 }
 
+async function fetchDataUrlOptional(url, mimeType) {
+  try {
+    const res = await fetch(url, { cache: "force-cache" });
+    if (!res.ok) return null;
+    const buf = await res.arrayBuffer();
+    return `data:${mimeType};base64,${arrayBufferToBase64(buf)}`;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Replace font file URLs in CSS with data: URLs (fetches each .otf from fonts folder).
  * Keeps existing `format("opentype")` after `url(...)` in @font-face rules.
@@ -76,7 +87,7 @@ export function svgTextToCssUrl(svgText) {
 
 /**
  * Options to pass to `renderServiceCard` so the document needs no files beside it.
- * @returns {Promise<{ assetBase: string, inlineLogoSvg: string, embeddedBackgroundDataUri: string, embeddedVisualsDataUri: string, embeddedFontCss: string }>}
+ * @returns {Promise<{ assetBase: string, inlineLogoSvg?: string, inlineLogoDataUrl?: string, embeddedBackgroundDataUri?: string, embeddedVisualsDataUri?: string, embeddedFontCss: string }>}
  */
 export async function buildSelfContainedRenderOptions() {
   const base = getAppAssetBase();
@@ -93,9 +104,8 @@ export async function buildSelfContainedRenderOptions() {
     logoSvg = await fetchTextOptional(candidate);
     if (logoSvg) break;
   }
-  if (!logoSvg) {
-    throw new Error("Logo asset could not be loaded for print/export.");
-  }
+  const logoPngDataUrl = await fetchDataUrlOptional(`${base}logo.png`, "image/png");
+  if (!logoSvg && !logoPngDataUrl) throw new Error("Logo asset could not be loaded for print/export.");
 
   const [bgSvg, visualsSvg, fontCssRaw] = await Promise.all([
     fetchTextOptional(`${base}Background.svg`),
@@ -114,7 +124,8 @@ export async function buildSelfContainedRenderOptions() {
 
   return {
     assetBase: "./",
-    inlineLogoSvg: logoSvg,
+    ...(logoSvg ? { inlineLogoSvg: logoSvg } : {}),
+    ...(logoPngDataUrl ? { inlineLogoDataUrl: logoPngDataUrl } : {}),
     ...(bgSvg ? { embeddedBackgroundDataUri: svgTextToCssUrl(bgSvg) } : {}),
     ...(visualsSvg ? { embeddedVisualsDataUri: svgTextToCssUrl(visualsSvg) } : {}),
     embeddedFontCss

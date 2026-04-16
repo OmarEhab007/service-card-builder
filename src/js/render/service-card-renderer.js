@@ -14,6 +14,7 @@ function stripXmlProlog(svg) {
  * @param {{
  *   assetBase?: string,
  *   inlineLogoSvg?: string,
+ *   inlineLogoDataUrl?: string,
  *   embeddedFontCss?: string,
  *   embeddedBackgroundDataUri?: string,
  *   embeddedVisualsDataUri?: string
@@ -852,7 +853,9 @@ export function renderServiceCard(state, opts = {}) {
   const logoHtml =
     typeof opts.inlineLogoSvg === "string" && opts.inlineLogoSvg.trim()
       ? `<div class="logo-svg-wrap logo logo--banner" role="img" aria-label="Damee Logo">${stripXmlProlog(opts.inlineLogoSvg)}</div>`
-      : `<img src="${logoPath}" class="logo logo--banner" alt="Damee Logo" width="200" height="48">`;
+      : typeof opts.inlineLogoDataUrl === "string" && opts.inlineLogoDataUrl.trim()
+        ? `<img src="${opts.inlineLogoDataUrl}" class="logo logo--banner" alt="Damee Logo" width="200" height="48">`
+        : `<img src="${logoPath}" class="logo logo--banner" alt="Damee Logo" width="200" height="48">`;
 
   return `<!DOCTYPE html>
 <html lang="en">
