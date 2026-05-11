@@ -101,6 +101,8 @@ function normalizeStateShape(next) {
     next.raciConfig.roles = DEFAULT_RACI_ROLES;
   }
   if (!next.identity) next.identity = { ...DEFAULT_IDENTITY };
+  const BUSINESS_FIELDS = ["businessPurpose", "businessOwner", "targetRequesters", "eligibility", "outOfScope", "reviewDate"];
+  BUSINESS_FIELDS.forEach((f) => { if (next.identity[f] === undefined) next.identity[f] = ""; });
   if (!Array.isArray(next.actors)) next.actors = [];
   if (!Array.isArray(next.workflow)) next.workflow = [];
   if (!Array.isArray(next.fields)) next.fields = [];
