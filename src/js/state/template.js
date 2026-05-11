@@ -182,5 +182,31 @@ export const enterpriseTemplate = {
       owner: "System Team",
       frequency: "Monthly"
     }
-  ]
+  ],
+  bmcConfig: {
+    implementationMode: "dwp",
+    dwp: {
+      catalogProfile: "IT Infrastructure > Server Provisioning",
+      questionnaireMapping: "SRV_REQUEST_QUESTIONNAIRE",
+      workflowMapping: "SRV_APPROVAL_WORKFLOW",
+      processInputs: "ServerLocation, ServerEnvironment, ServerType, DBType, Specs",
+      connectorProvider: "BMC Helix DWP Connector v4.2",
+      entitlementRules: "Group: IT-Staff; Role: Requestor",
+      publishLifecycle: "Draft > Review > Published"
+    },
+    srm: {
+      srdName: "Server Provisioning Request",
+      srdType: "Standard",
+      requestCatalogManager: "Infrastructure Services",
+      aotMapping: "SRV_PROVISIONING_AOT",
+      pdtMapping: "SRV_APPROVAL_PDT",
+      fulfillmentObject: "Server Provisioning Task",
+      approvalRules: "Manager + Business Owner + EA (sequential)",
+      slmServiceTarget: "SLA_SERVER_PROVISION_5BD",
+      businessServiceCI: "IT Infrastructure Services",
+      deploymentLifecycle: "Dev > Staging > Production"
+    },
+    deploymentChecklist: "1. Validate DWP catalog entry\n2. Test questionnaire in staging\n3. Smoke test approval workflow\n4. Confirm SLA target assignment\n5. Enable entitlement group",
+    localizationNotes: "Arabic questionnaire labels provided via nameAr fields. RTL layout supported by DWP theme."
+  }
 };

@@ -97,6 +97,22 @@
   color: var(--brand-ink);
 }
 
+.section-tab--tech {
+  border-color: #c7d2e8;
+  color: #3b82f6;
+}
+
+.section-tab--tech:hover {
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+
+.section-tab--tech.active {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+  color: #1e40af;
+}
+
 .table-editor {
   border: 1px solid var(--neutral-200);
   border-radius: var(--radius-md);

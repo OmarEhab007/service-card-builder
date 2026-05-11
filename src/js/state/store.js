@@ -1,5 +1,32 @@
 import { FULFILLMENT_DEFAULT, normalizeFulfillmentConfig } from "./fulfillment.js";
 
+const DEFAULT_BMC_CONFIG = {
+  implementationMode: "none",
+  dwp: {
+    catalogProfile: "",
+    questionnaireMapping: "",
+    workflowMapping: "",
+    processInputs: "",
+    connectorProvider: "",
+    entitlementRules: "",
+    publishLifecycle: ""
+  },
+  srm: {
+    srdName: "",
+    srdType: "Standard",
+    requestCatalogManager: "",
+    aotMapping: "",
+    pdtMapping: "",
+    fulfillmentObject: "",
+    approvalRules: "",
+    slmServiceTarget: "",
+    businessServiceCI: "",
+    deploymentLifecycle: ""
+  },
+  deploymentChecklist: "",
+  localizationNotes: ""
+};
+
 const listeners = new Set();
 
 const DEFAULT_RACI_ROLES = [
@@ -92,6 +119,19 @@ export function reconcileState(next) {
   return next;
 }
 
+function normalizeBmcConfig(raw) {
+  const base = raw && typeof raw === "object" ? raw : {};
+  const dwp = base.dwp && typeof base.dwp === "object" ? base.dwp : {};
+  const srm = base.srm && typeof base.srm === "object" ? base.srm : {};
+  return {
+    implementationMode: base.implementationMode || "none",
+    dwp: { ...DEFAULT_BMC_CONFIG.dwp, ...dwp },
+    srm: { ...DEFAULT_BMC_CONFIG.srm, ...srm },
+    deploymentChecklist: base.deploymentChecklist || "",
+    localizationNotes: base.localizationNotes || ""
+  };
+}
+
 function normalizeStateShape(next) {
   next.fulfillment = normalizeFulfillmentConfig(next.fulfillment || FULFILLMENT_DEFAULT);
   if (!next.raciConfig || typeof next.raciConfig !== "object") {
@@ -110,6 +150,7 @@ function normalizeStateShape(next) {
   if (!Array.isArray(next.support)) next.support = [];
   if (!Array.isArray(next.slaParts)) next.slaParts = [];
   if (!Array.isArray(next.kpis)) next.kpis = [];
+  next.bmcConfig = normalizeBmcConfig(next.bmcConfig);
   if (!next.sla || typeof next.sla !== "object") next.sla = {};
   const svc = next.sla.service || "";
   const idName = (next.identity && next.identity.name) || "";
@@ -145,6 +186,7 @@ const state = {
   raci: [],
   support: [],
   slaParts: [],
+  bmcConfig: { ...DEFAULT_BMC_CONFIG, dwp: { ...DEFAULT_BMC_CONFIG.dwp }, srm: { ...DEFAULT_BMC_CONFIG.srm } },
   sla: {
     service: "Server Request",
     requester: "",

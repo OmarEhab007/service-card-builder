@@ -1,6 +1,6 @@
 export const schema = {
   type: "object",
-  required: ["fulfillment", "raciConfig", "identity", "actors", "workflow", "fields", "raci", "support", "sla", "slaParts", "kpis"],
+  required: ["fulfillment", "raciConfig", "identity", "actors", "workflow", "fields", "raci", "support", "sla", "slaParts", "kpis", "bmcConfig"],
   properties: {
     schemaVersion: { type: "string" },
     fulfillment: {
@@ -109,7 +109,8 @@ export const schema = {
           values: { type: "string" },
           questionAr: { type: "string" },
           mandatory: { type: "string", enum: ["X", "-"] },
-          dependency: { type: "string" }
+          dependency: { type: "string" },
+          bmcVariable: { type: "string" }
         }
       }
     },
@@ -179,6 +180,42 @@ export const schema = {
           owner: { type: "string", minLength: 1 },
           frequency: { type: "string", minLength: 1 }
         }
+      }
+    },
+    bmcConfig: {
+      type: "object",
+      required: ["implementationMode"],
+      properties: {
+        implementationMode: { type: "string", enum: ["dwp", "srm", "hybrid", "none"] },
+        dwp: {
+          type: "object",
+          properties: {
+            catalogProfile: { type: "string" },
+            questionnaireMapping: { type: "string" },
+            workflowMapping: { type: "string" },
+            processInputs: { type: "string" },
+            connectorProvider: { type: "string" },
+            entitlementRules: { type: "string" },
+            publishLifecycle: { type: "string" }
+          }
+        },
+        srm: {
+          type: "object",
+          properties: {
+            srdName: { type: "string" },
+            srdType: { type: "string", enum: ["Standard", "Advanced", "Other"] },
+            requestCatalogManager: { type: "string" },
+            aotMapping: { type: "string" },
+            pdtMapping: { type: "string" },
+            fulfillmentObject: { type: "string" },
+            approvalRules: { type: "string" },
+            slmServiceTarget: { type: "string" },
+            businessServiceCI: { type: "string" },
+            deploymentLifecycle: { type: "string" }
+          }
+        },
+        deploymentChecklist: { type: "string" },
+        localizationNotes: { type: "string" }
       }
     }
   }

@@ -1,5 +1,6 @@
 import { renderServiceCard } from "../render/service-card-renderer.js";
 import { renderBusinessCard } from "../render/business-card-renderer.js";
+import { renderTechnicalBuildPack } from "../render/technical-build-pack-renderer.js";
 import { renderMarkdown } from "../render/markdown-renderer.js";
 import { downloadFile } from "../utils/dom.js";
 import { buildSelfContainedRenderOptions } from "./portable-assets.js";
@@ -35,6 +36,10 @@ async function renderMinimalPortableBusiness(state) {
   return renderBusinessCard(state, { assetBase: "./" });
 }
 
+async function renderMinimalPortableTechPack(state) {
+  return renderTechnicalBuildPack(state, { assetBase: "./" });
+}
+
 export async function exportHtml(state) {
   let html;
   try {
@@ -67,7 +72,20 @@ export function exportMarkdown(state) {
   downloadFile(md, `${name}.md`, "text/markdown");
 }
 
-/** @param {"business"|"full"} [exportType] */
+export async function exportTechBuildPackHtml(state) {
+  let html;
+  try {
+    const bundle = await buildSelfContainedRenderOptions();
+    html = renderTechnicalBuildPack(state, bundle);
+  } catch (e) {
+    console.warn("Self-contained embed failed, using partial HTML:", e);
+    html = await renderMinimalPortableTechPack(state);
+  }
+  const name = (state.identity.name || "Service").replace(/\s+/g, "_");
+  downloadFile(html, `${name}_BMC_Build_Pack.html`, "text/html");
+}
+
+/** @param {"business"|"tech"|"full"} [exportType] */
 export async function printPdf(state, exportType = "business") {
   // Open popup synchronously in the click stack so browsers don't block it.
   const popup = window.open("", "_blank");
@@ -81,13 +99,16 @@ export async function printPdf(state, exportType = "business") {
   popup.document.close();
 
   let html;
-  const isBusiness = exportType === "business";
   try {
     const bundle = await buildSelfContainedRenderOptions();
-    html = isBusiness ? renderBusinessCard(state, bundle) : renderServiceCard(state, bundle);
+    if (exportType === "tech") html = renderTechnicalBuildPack(state, bundle);
+    else if (exportType === "full") html = renderServiceCard(state, bundle);
+    else html = renderBusinessCard(state, bundle);
   } catch (e) {
     console.warn("Self-contained embed failed for print:", e);
-    html = isBusiness ? await renderMinimalPortableBusiness(state) : await renderMinimalPortable(state);
+    if (exportType === "tech") html = await renderMinimalPortableTechPack(state);
+    else if (exportType === "full") html = await renderMinimalPortable(state);
+    else html = await renderMinimalPortableBusiness(state);
   }
 
   popup.document.open();

@@ -28,7 +28,8 @@
         <div class="export-type-selector" role="group" aria-label="Export type">
           <span class="export-type-label">Export as:</span>
           <button id="btnExportTypeBusiness" type="button" class="btn btn-sm export-type-btn export-type-btn--active" data-type="business" aria-pressed="true">Business Card</button>
-          <button id="btnExportTypeFull" type="button" class="btn btn-sm export-type-btn" data-type="full" aria-pressed="false">Full Technical</button>
+          <button id="btnExportTypeTech" type="button" class="btn btn-sm export-type-btn" data-type="tech" aria-pressed="false">BMC Build Pack</button>
+          <button id="btnExportTypeFull" type="button" class="btn btn-sm export-type-btn" data-type="full" aria-pressed="false">Full Export</button>
         </div>
         <button id="btnPrint" type="button" class="btn btn-primary btn-sm">Print PDF</button>
         <button id="btnExportHtml" type="button" class="btn btn-secondary btn-sm">Export HTML</button>
@@ -52,6 +53,7 @@
         <button class="section-tab" type="button" data-panel="raci">RACI</button>
         <button class="section-tab" type="button" data-panel="support">Support</button>
         <button class="section-tab" type="button" data-panel="sla">SLA & KPIs</button>
+        <button class="section-tab section-tab--tech" type="button" data-panel="bmcConfig">BMC Config</button>
       </nav>
 
       <div class="panels" id="panels">
@@ -333,6 +335,78 @@
             <option value="90%"></option>
             <option value="95%"></option>
           </datalist>
+        </section>
+
+        <section class="panel" data-panel="bmcConfig">
+          <h2>BMC Helix Configuration</h2>
+          <p class="hint panel-intro">Technical implementation details for BMC Helix developers and catalog administrators. This section feeds the <strong>BMC Build Pack</strong> export — it is never included in the Business Service Card.</p>
+          <div class="tab-guide">
+            <h3 class="tab-guide__title">What to fill in</h3>
+            <p class="tab-guide__text"><strong>EN:</strong> Select the implementation mode, then complete the relevant DWP Catalog or SRM/SRD sections. Leave empty if not yet decided.</p>
+          </div>
+
+          <fieldset class="form-fieldset">
+            <legend>Implementation Mode</legend>
+            <div class="bmc-mode-group">
+              <label class="bmc-mode-option"><input type="radio" name="bmcImplementationMode" value="none" checked> <span>Not specified</span></label>
+              <label class="bmc-mode-option"><input type="radio" name="bmcImplementationMode" value="dwp"> <span>DWP Catalog</span></label>
+              <label class="bmc-mode-option"><input type="radio" name="bmcImplementationMode" value="srm"> <span>SRM / SRD</span></label>
+              <label class="bmc-mode-option"><input type="radio" name="bmcImplementationMode" value="hybrid"> <span>Hybrid (DWP + SRM)</span></label>
+            </div>
+          </fieldset>
+
+          <div id="bmcDwpSection" hidden>
+            <fieldset class="form-fieldset form-fieldset--tech">
+              <legend>DWP Catalog</legend>
+              <label>Catalog Profile Name<input id="bmcDwp_catalogProfile" type="text" placeholder="e.g. Server Request Catalog"></label>
+              <div class="grid two">
+                <label>Questionnaire Mapping Notes<textarea id="bmcDwp_questionnaireMapping" rows="3" placeholder="Map each question to its catalog questionnaire field."></textarea></label>
+                <label>Workflow / Process Mapping Notes<textarea id="bmcDwp_workflowMapping" rows="3" placeholder="Map workflow steps to DWP process activities."></textarea></label>
+              </div>
+              <label>Process Input Variables<textarea id="bmcDwp_processInputs" rows="2" placeholder="List process input variables and their sources."></textarea></label>
+              <div class="grid two">
+                <label>Connector / Provider Notes<textarea id="bmcDwp_connectorProvider" rows="2" placeholder="Connector type, provider configuration, endpoint details."></textarea></label>
+                <label>Entitlement Rules<textarea id="bmcDwp_entitlementRules" rows="2" placeholder="Groups, roles, or conditions for catalog access."></textarea></label>
+              </div>
+              <label>Approval &amp; Publish Lifecycle<textarea id="bmcDwp_publishLifecycle" rows="2" placeholder="Approval routing, staging, publication conditions."></textarea></label>
+            </fieldset>
+          </div>
+
+          <div id="bmcSrmSection" hidden>
+            <fieldset class="form-fieldset form-fieldset--tech">
+              <legend>SRM / SRD</legend>
+              <div class="grid three">
+                <label>SRD Name<input id="bmcSrm_srdName" type="text" placeholder="e.g. SRD:Server Request"></label>
+                <label>SRD Type
+                  <select id="bmcSrm_srdType">
+                    <option value="Standard">Standard</option>
+                    <option value="Advanced">Advanced</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </label>
+                <label>Request Catalog Manager<input id="bmcSrm_requestCatalogManager" type="text" placeholder="Team responsible for catalog management"></label>
+              </div>
+              <div class="grid two">
+                <label>AOT Mapping<textarea id="bmcSrm_aotMapping" rows="3" placeholder="Application Object Template — task/approval routing."></textarea></label>
+                <label>PDT Mapping<textarea id="bmcSrm_pdtMapping" rows="3" placeholder="Process Definition Template — fulfillment steps."></textarea></label>
+              </div>
+              <div class="grid two">
+                <label>Fulfillment Object<input id="bmcSrm_fulfillmentObject" type="text" placeholder="e.g. Change, Incident, Work Order"></label>
+                <label>Business Service CI<input id="bmcSrm_businessServiceCI" type="text" placeholder="CMDB CI linked to this service"></label>
+              </div>
+              <div class="grid two">
+                <label>Approval Rules<textarea id="bmcSrm_approvalRules" rows="2" placeholder="Approval process configuration and conditions."></textarea></label>
+                <label>SLM / Service Target Mapping<textarea id="bmcSrm_slmServiceTarget" rows="2" placeholder="Service target name, measurement criteria."></textarea></label>
+              </div>
+              <label>Deployment Lifecycle Notes<textarea id="bmcSrm_deploymentLifecycle" rows="2" placeholder="Draft → Test → UAT → Production steps."></textarea></label>
+            </fieldset>
+          </div>
+
+          <fieldset class="form-fieldset">
+            <legend>Deployment &amp; Localization</legend>
+            <label>Deployment &amp; Validation Checklist<textarea id="bmc_deploymentChecklist" rows="3" placeholder="List steps to validate before going live."></textarea></label>
+            <label>Localization Requirements<textarea id="bmc_localizationNotes" rows="2" placeholder="Arabic translations, RTL layout, locale-specific notes."></textarea></label>
+          </fieldset>
         </section>
       </div>
     </div>
