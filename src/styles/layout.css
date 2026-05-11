@@ -33,15 +33,22 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   flex-shrink: 0;
   min-width: 0;
+  padding: 4px 10px 4px 5px;
+  border: 1px solid rgba(203, 213, 225, 0.78);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
 }
 
 .brand-logo {
-  height: 38px;
+  height: 30px;
   width: auto;
   object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.08));
 }
 
 .brand-meta h1 {
@@ -69,6 +76,58 @@
 
 .topbar-actions .btn {
   flex-shrink: 0;
+}
+
+.topbar-divider {
+  display: inline-block;
+  width: 1px;
+  height: 20px;
+  background: var(--neutral-200);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+.export-type-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--neutral-50);
+  border: 1px solid var(--neutral-200);
+  border-radius: 7px;
+  padding: 2px 4px;
+  flex-shrink: 0;
+}
+
+.export-type-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--neutral-500);
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+.export-type-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--neutral-600);
+  border-radius: 5px;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.export-type-btn:hover {
+  background: var(--neutral-100);
+  color: var(--neutral-900);
+}
+
+.export-type-btn--active {
+  background: var(--neutral-0);
+  border-color: var(--neutral-200);
+  color: #1e40af;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
 main.app-shell {
@@ -139,7 +198,7 @@ main.app-shell {
   }
 
   .brand-logo {
-    height: 32px;
+    height: 28px;
   }
 
   .editor-pane {

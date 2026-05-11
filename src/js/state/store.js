@@ -9,6 +9,25 @@ const DEFAULT_RACI_ROLES = [
   { key: "deliveryTeams", label: "System / Network / DB / EA" }
 ];
 
+const DEFAULT_IDENTITY = {
+  name: "",
+  nameAr: "",
+  description: "",
+  descriptionAr: "",
+  version: "1.0",
+  category: "Infrastructure",
+  status: "Active",
+  owner: "",
+  date: "",
+  id: "",
+  businessPurpose: "",
+  businessOwner: "",
+  targetRequesters: "",
+  eligibility: "",
+  outOfScope: "",
+  reviewDate: ""
+};
+
 function slugifyRole(label, idx) {
   const base = String(label || "")
     .toLowerCase()
@@ -81,7 +100,9 @@ function normalizeStateShape(next) {
   if (!Array.isArray(next.raciConfig.roles) || next.raciConfig.roles.length === 0) {
     next.raciConfig.roles = DEFAULT_RACI_ROLES;
   }
-  if (!next.identity) next.identity = { ...state.identity };
+  if (!next.identity) next.identity = { ...DEFAULT_IDENTITY };
+  const BUSINESS_FIELDS = ["businessPurpose", "businessOwner", "targetRequesters", "eligibility", "outOfScope", "reviewDate"];
+  BUSINESS_FIELDS.forEach((f) => { if (next.identity[f] === undefined) next.identity[f] = ""; });
   if (!Array.isArray(next.actors)) next.actors = [];
   if (!Array.isArray(next.workflow)) next.workflow = [];
   if (!Array.isArray(next.fields)) next.fields = [];
@@ -117,18 +138,7 @@ const state = {
   schemaVersion: "1.0.0",
   fulfillment: { ...FULFILLMENT_DEFAULT },
   raciConfig: { roles: DEFAULT_RACI_ROLES },
-  identity: {
-    name: "",
-    nameAr: "",
-    description: "",
-    descriptionAr: "",
-    version: "1.0",
-    category: "Infrastructure",
-    status: "Active",
-    owner: "",
-    date: "",
-    id: ""
-  },
+  identity: { ...DEFAULT_IDENTITY },
   actors: [],
   workflow: [],
   fields: [],
@@ -151,6 +161,40 @@ const state = {
   kpis: []
 };
 
+// --- Debounced localStorage persistence (A-6) ---
+let _saveTimer = null;
+const SAVE_DEBOUNCE_MS = 300;
+
+function scheduleSave() {
+  if (_saveTimer !== null) clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(() => {
+    _saveTimer = null;
+    try {
+      localStorage.setItem("scb-draft", JSON.stringify(state));
+    } catch {
+      // Storage full or unavailable — fail silently
+    }
+  }, SAVE_DEBOUNCE_MS);
+}
+
+/** Force-flush any pending debounced save (e.g., before navigating away). */
+export function flushSave() {
+  if (_saveTimer !== null) {
+    clearTimeout(_saveTimer);
+    _saveTimer = null;
+    try {
+      localStorage.setItem("scb-draft", JSON.stringify(state));
+    } catch {
+      // ignore
+    }
+  }
+}
+
+/**
+ * Returns the current state.
+ * The returned object is the live internal reference — treat it as read-only.
+ * Only mutate state through patchState().
+ */
 export function getState() {
   return state;
 }
@@ -159,7 +203,7 @@ export function patchState(patcher) {
   patcher(state);
   reconcileState(state);
   listeners.forEach((listener) => listener(state));
-  localStorage.setItem("scb-draft", JSON.stringify(state));
+  scheduleSave();
 }
 
 export function subscribe(listener) {
@@ -183,5 +227,5 @@ export function replaceState(nextState) {
   Object.keys(state).forEach((key) => delete state[key]);
   Object.assign(state, nextState);
   listeners.forEach((listener) => listener(state));
-  localStorage.setItem("scb-draft", JSON.stringify(state));
+  scheduleSave();
 }

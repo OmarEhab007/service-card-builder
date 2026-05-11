@@ -1,11 +1,8 @@
 import { renderServiceCard } from "../render/service-card-renderer.js";
+import { renderBusinessCard } from "../render/business-card-renderer.js";
 import { renderMarkdown } from "../render/markdown-renderer.js";
 import { downloadFile } from "../utils/dom.js";
-import { BUNDLED_FAV_LOGO_URL, buildSelfContainedRenderOptions, getAppAssetBase } from "./portable-assets.js";
-
-function appAssetBase() {
-  return getAppAssetBase();
-}
+import { buildSelfContainedRenderOptions } from "./portable-assets.js";
 
 function whenPrintDocumentReady(doc) {
   const fontsReady =
@@ -29,46 +26,13 @@ function whenPrintDocumentReady(doc) {
   return Promise.all([fontsReady, imagesReady]);
 }
 
-/** Fallback when embedding fails: still inline logo so the banner shows; external links may break if the file is moved. */
+/** Fallback when embedding fails; external decorative assets may break if the file is moved. */
 async function renderMinimalPortable(state) {
-  const base = appAssetBase();
-  let inlineLogo = null;
-  let inlineLogoDataUrl = null;
-  try {
-    const res = await fetch(BUNDLED_FAV_LOGO_URL, { cache: "force-cache" });
-    if (res.ok) inlineLogo = await res.text();
-  } catch {
-    /* ignore */
-  }
-  if (!inlineLogo) {
-    try {
-      const res = await fetch(`${base}assets/safari-pinned-tab.svg`, { cache: "force-cache" });
-      if (res.ok) inlineLogo = await res.text();
-    } catch {
-      /* ignore */
-    }
-  }
-  if (!inlineLogo) {
-    try {
-      const res = await fetch(`${base}logo.png`, { cache: "force-cache" });
-      if (res.ok) {
-        const buf = await res.arrayBuffer();
-        const bytes = new Uint8Array(buf);
-        let binary = "";
-        for (let i = 0; i < bytes.length; i += 0x8000) {
-          binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-        }
-        inlineLogoDataUrl = `data:image/png;base64,${btoa(binary)}`;
-      }
-    } catch {
-      /* ignore */
-    }
-  }
-  return renderServiceCard(state, {
-    assetBase: "./",
-    inlineLogoSvg: inlineLogo || undefined,
-    inlineLogoDataUrl: inlineLogoDataUrl || undefined
-  });
+  return renderServiceCard(state, { assetBase: "./" });
+}
+
+async function renderMinimalPortableBusiness(state) {
+  return renderBusinessCard(state, { assetBase: "./" });
 }
 
 export async function exportHtml(state) {
@@ -81,7 +45,20 @@ export async function exportHtml(state) {
     html = await renderMinimalPortable(state);
   }
   const name = (state.identity.name || "Service_Card").replace(/\s+/g, "_");
-  downloadFile(html, `${name}.html`, "text/html");
+  downloadFile(html, `${name}_Full.html`, "text/html");
+}
+
+export async function exportBusinessCardHtml(state) {
+  let html;
+  try {
+    const bundle = await buildSelfContainedRenderOptions();
+    html = renderBusinessCard(state, bundle);
+  } catch (e) {
+    console.warn("Self-contained embed failed, using partial HTML:", e);
+    html = await renderMinimalPortableBusiness(state);
+  }
+  const name = (state.identity.name || "Service_Card").replace(/\s+/g, "_");
+  downloadFile(html, `${name}_Business_Card.html`, "text/html");
 }
 
 export function exportMarkdown(state) {
@@ -90,7 +67,8 @@ export function exportMarkdown(state) {
   downloadFile(md, `${name}.md`, "text/markdown");
 }
 
-export async function printPdf(state) {
+/** @param {"business"|"full"} [exportType] */
+export async function printPdf(state, exportType = "business") {
   // Open popup synchronously in the click stack so browsers don't block it.
   const popup = window.open("", "_blank");
   if (!popup) {
@@ -103,12 +81,13 @@ export async function printPdf(state) {
   popup.document.close();
 
   let html;
+  const isBusiness = exportType === "business";
   try {
     const bundle = await buildSelfContainedRenderOptions();
-    html = renderServiceCard(state, bundle);
+    html = isBusiness ? renderBusinessCard(state, bundle) : renderServiceCard(state, bundle);
   } catch (e) {
     console.warn("Self-contained embed failed for print:", e);
-    html = await renderMinimalPortable(state);
+    html = isBusiness ? await renderMinimalPortableBusiness(state) : await renderMinimalPortable(state);
   }
 
   popup.document.open();
