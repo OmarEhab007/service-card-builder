@@ -32,7 +32,13 @@ export const enterpriseTemplate = {
     status: "Active",
     owner: "System Team",
     date: "2026-04-15",
-    id: "SVC-INF-001"
+    id: "SVC-INF-001",
+    businessPurpose: "Enables authorized staff to provision new servers through a standardized, governed process — ensuring security, architecture, and business approvals are obtained before any hardware or virtual resources are allocated.",
+    businessOwner: "Head of IT Infrastructure",
+    targetRequesters: "All IT staff and project leads requiring server resources",
+    eligibility: "Full-time employees and contractors with a valid business justification and manager authorization",
+    outOfScope: "Cloud SaaS subscriptions, desktop equipment, network switches, and storage-only requests are handled by separate services.",
+    reviewDate: "2027-04-15"
   },
   actors: [
     { name: "Requester", role: "Service Requestor", department: "Business Units", email: "" },
@@ -183,6 +189,16 @@ export const enterpriseTemplate = {
       frequency: "Monthly"
     }
   ],
+  governance: {
+    preparedBy: "System Team Lead",
+    reviewedBy: "IT Service Manager",
+    approvedBy: "Head of IT Infrastructure",
+    approvalDate: "2026-04-15",
+    uatCompleted: true,
+    businessOwnerSignedOff: true,
+    itilAligned: true,
+    publicationNotes: "Approved for publication on DWP Catalog for all IT staff."
+  },
   bmcConfig: {
     implementationMode: "dwp",
     dwp: {

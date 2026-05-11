@@ -1,6 +1,6 @@
 export const schema = {
   type: "object",
-  required: ["fulfillment", "raciConfig", "identity", "actors", "workflow", "fields", "raci", "support", "sla", "slaParts", "kpis", "bmcConfig"],
+  required: ["fulfillment", "raciConfig", "identity", "actors", "workflow", "fields", "raci", "support", "sla", "slaParts", "kpis", "bmcConfig", "governance"],
   properties: {
     schemaVersion: { type: "string" },
     fulfillment: {
@@ -216,6 +216,19 @@ export const schema = {
         },
         deploymentChecklist: { type: "string" },
         localizationNotes: { type: "string" }
+      }
+    },
+    governance: {
+      type: "object",
+      properties: {
+        preparedBy: { type: "string" },
+        reviewedBy: { type: "string" },
+        approvedBy: { type: "string" },
+        approvalDate: { type: "string" },
+        uatCompleted: { type: "boolean" },
+        businessOwnerSignedOff: { type: "boolean" },
+        itilAligned: { type: "boolean" },
+        publicationNotes: { type: "string" }
       }
     }
   }
