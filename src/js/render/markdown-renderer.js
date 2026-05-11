@@ -32,10 +32,13 @@ export function renderMarkdown(state) {
         .join("\n")}\n\n`
     : "| - | - | - | - | - | - |\n\n";
 
-  md += `## RACI\n\n| STEP | Requester | Business Owner | Requester Manager | System Team / Network / DB Team / EA Team |\n|---|---|---|---|---|\n`;
+  const raciRoles = Array.isArray(state.raciConfig?.roles) ? state.raciConfig.roles : [];
+  const raciHeaders = raciRoles.map((r) => r.label);
+  const raciKeys = raciRoles.map((r) => r.key);
+  md += `## RACI\n\n| STEP | ${raciHeaders.join(" | ")} |\n|---|${raciHeaders.map(() => "---").join("|")}|\n`;
   md += raci.length
-    ? `${toRows(raci, ["step", "requester", "businessOwner", "requesterManager", "deliveryTeams"])}\n\n`
-    : "| - | - | - | - | - |\n\n";
+    ? `${raci.map((row) => `| ${String(row.step || "").replace(/\|/g, "\\|")} | ${raciKeys.map((k) => String(row[k] || "-").replace(/\|/g, "\\|")).join(" | ")} |`).join("\n")}\n\n`
+    : `| - | ${raciHeaders.map(() => "-").join(" | ")} |\n\n`;
 
   md += `## Support Group\n\n| Support Group | Names | Emails |\n|---|---|---|\n`;
   md += support.length ? `${toRows(support, ["supportGroup", "names", "emails"])}\n\n` : "| - | - | - |\n\n";

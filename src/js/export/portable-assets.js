@@ -3,8 +3,6 @@
  * is moved outside the project (no relative links to /public).
  */
 
-export const BUNDLED_FAV_LOGO_URL = new URL("../../../Aassets/fav/safari-pinned-tab.svg", import.meta.url).href;
-
 export function getAppAssetBase() {
   const base = import.meta.env.BASE_URL || "/";
   return new URL(base, window.location.origin).href.replace(/\/?$/, "/");
@@ -30,17 +28,6 @@ function arrayBufferToBase64(buffer) {
   return btoa(binary);
 }
 
-async function fetchDataUrlOptional(url, mimeType) {
-  try {
-    const res = await fetch(url, { cache: "force-cache" });
-    if (!res.ok) return null;
-    const buf = await res.arrayBuffer();
-    return `data:${mimeType};base64,${arrayBufferToBase64(buf)}`;
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Replace font file URLs in CSS with data: URLs (fetches each .otf from fonts folder).
  * Keeps existing `format("opentype")` after `url(...)` in @font-face rules.
@@ -63,12 +50,16 @@ export async function inlineFontUrlsInCss(css, fontsFolderUrl) {
 
   const dataUrlByAbs = new Map();
   const uniqueAbs = [...new Set(refs.map((r) => r.abs))];
-  for (const abs of uniqueAbs) {
-    const res = await fetch(abs, { cache: "force-cache" });
-    if (!res.ok) throw new Error(`Font fetch failed: ${abs}`);
-    const buf = await res.arrayBuffer();
-    dataUrlByAbs.set(abs, `url(data:font/otf;base64,${arrayBufferToBase64(buf)})`);
-  }
+  // P2: Fetch all font files in parallel instead of sequentially
+  const results = await Promise.all(
+    uniqueAbs.map(async (abs) => {
+      const res = await fetch(abs, { cache: "force-cache" });
+      if (!res.ok) throw new Error(`Font fetch failed: ${abs}`);
+      const buf = await res.arrayBuffer();
+      return { abs, dataUrl: `url(data:font/otf;base64,${arrayBufferToBase64(buf)})` };
+    })
+  );
+  results.forEach(({ abs, dataUrl }) => dataUrlByAbs.set(abs, dataUrl));
 
   let out = css;
   for (const { full, abs } of refs) {
@@ -89,28 +80,10 @@ export function svgTextToCssUrl(svgText) {
 
 /**
  * Options to pass to `renderServiceCard` so the document needs no files beside it.
- * @returns {Promise<{ assetBase: string, inlineLogoSvg?: string, inlineLogoDataUrl?: string, embeddedBackgroundDataUri?: string, embeddedVisualsDataUri?: string, embeddedFontCss: string }>}
+ * @returns {Promise<{ assetBase: string, embeddedBackgroundDataUri?: string, embeddedVisualsDataUri?: string, embeddedFontCss: string }>}
  */
 export async function buildSelfContainedRenderOptions() {
   const base = getAppAssetBase();
-
-  // Keep export resilient in production even when optional decorative assets are absent.
-  const logoCandidates = [
-    BUNDLED_FAV_LOGO_URL,
-    `${base}Aassets/fav/safari-pinned-tab.svg`,
-    `${base}assets/safari-pinned-tab.svg`,
-    `${base}Aassets/svg/logo-light_en.svg`,
-    `${base}assets/svg/logo-light_en.svg`,
-    `${base}Aassets/svg/logo-light.svg`,
-    `${base}assets/svg/logo-light.svg`
-  ];
-  let logoSvg = null;
-  for (const candidate of logoCandidates) {
-    logoSvg = await fetchTextOptional(candidate);
-    if (logoSvg) break;
-  }
-  const logoPngDataUrl = await fetchDataUrlOptional(`${base}logo.png`, "image/png");
-  if (!logoSvg && !logoPngDataUrl) throw new Error("Logo asset could not be loaded for print/export.");
 
   const [bgSvg, visualsSvg, fontCssRaw] = await Promise.all([
     fetchTextOptional(`${base}Background.svg`),
@@ -129,8 +102,6 @@ export async function buildSelfContainedRenderOptions() {
 
   return {
     assetBase: "./",
-    ...(logoSvg ? { inlineLogoSvg: logoSvg } : {}),
-    ...(logoPngDataUrl ? { inlineLogoDataUrl: logoPngDataUrl } : {}),
     ...(bgSvg ? { embeddedBackgroundDataUri: svgTextToCssUrl(bgSvg) } : {}),
     ...(visualsSvg ? { embeddedVisualsDataUri: svgTextToCssUrl(visualsSvg) } : {}),
     embeddedFontCss

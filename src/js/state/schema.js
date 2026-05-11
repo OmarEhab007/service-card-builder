@@ -61,7 +61,13 @@ export const schema = {
         status: { type: "string" },
         owner: { type: "string" },
         date: { type: "string" },
-        id: { type: "string" }
+        id: { type: "string" },
+        businessPurpose: { type: "string" },
+        businessOwner: { type: "string" },
+        targetRequesters: { type: "string" },
+        eligibility: { type: "string" },
+        outOfScope: { type: "string" },
+        reviewDate: { type: "string" }
       }
     },
     actors: {
@@ -113,12 +119,9 @@ export const schema = {
         type: "object",
         required: ["step"],
         properties: {
-          step: { type: "string", minLength: 1 },
-          requester: { type: "string" },
-          businessOwner: { type: "string" },
-          requesterManager: { type: "string" },
-          deliveryTeams: { type: "string" }
-        }
+          step: { type: "string", minLength: 1 }
+        },
+        additionalProperties: { type: "string" }
       }
     },
     support: {

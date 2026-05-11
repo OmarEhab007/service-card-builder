@@ -1,4 +1,4 @@
-@import url("/fonts/loew-face.css");
+/* Font face loaded via <link> in index.html to support sub-path deployments */
 
 html {
   background-color: var(--neutral-50);

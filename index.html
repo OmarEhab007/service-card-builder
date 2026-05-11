@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Damee Service Card Builder</title>
   <link rel="icon" type="image/svg+xml" href="/Aassets/fav/safari-pinned-tab.svg">
+  <link rel="stylesheet" href="/fonts/loew-face.css">
   <link rel="stylesheet" href="./src/styles/tokens.css">
   <link rel="stylesheet" href="./src/styles/fonts.css">
   <link rel="stylesheet" href="./src/styles/base.css">
@@ -24,12 +25,18 @@
     </div>
     <div class="topbar-row topbar-row--toolbar" aria-label="Document actions">
       <div class="topbar-actions">
+        <div class="export-type-selector" role="group" aria-label="Export type">
+          <span class="export-type-label">Export as:</span>
+          <button id="btnExportTypeBusiness" type="button" class="btn btn-sm export-type-btn export-type-btn--active" data-type="business" aria-pressed="true">Business Card</button>
+          <button id="btnExportTypeFull" type="button" class="btn btn-sm export-type-btn" data-type="full" aria-pressed="false">Full Technical</button>
+        </div>
         <button id="btnPrint" type="button" class="btn btn-primary btn-sm">Print PDF</button>
+        <button id="btnExportHtml" type="button" class="btn btn-secondary btn-sm">Export HTML</button>
+        <button id="btnExportMd" type="button" class="btn btn-secondary btn-sm">Export MD</button>
+        <span class="topbar-divider"></span>
         <button id="btnTemplate" type="button" class="btn btn-secondary btn-sm" title="Replace current draft with the built-in example">Load example</button>
         <button id="btnSave" type="button" class="btn btn-secondary btn-sm">Save JSON</button>
         <button id="btnLoad" type="button" class="btn btn-secondary btn-sm">Load JSON</button>
-        <button id="btnExportHtml" type="button" class="btn btn-secondary btn-sm">Export HTML</button>
-        <button id="btnExportMd" type="button" class="btn btn-secondary btn-sm">Export MD</button>
         <input id="fileLoader" type="file" accept="application/json" hidden>
       </div>
     </div>
@@ -74,16 +81,36 @@
             <div class="grid three">
               <label>Version<input id="svcVersion" type="text" value="1.0" inputmode="decimal" autocomplete="off"></label>
               <label>Category<input id="svcCategory" type="text" value="Infrastructure" autocomplete="organization-title"></label>
-              <label>Status<input id="svcStatus" type="text" value="Active" autocomplete="off"></label>
+              <label>Status
+                <select id="svcStatus">
+                  <option value="Draft">Draft</option>
+                  <option value="Active" selected>Active</option>
+                  <option value="Deprecated">Deprecated</option>
+                  <option value="Retired">Retired</option>
+                </select>
+              </label>
             </div>
           </fieldset>
           <fieldset class="form-fieldset">
             <legend>Ownership &amp; reference</legend>
             <div class="grid three">
-              <label>Owner<input id="svcOwner" type="text" placeholder="Team or person" autocomplete="name"></label>
+              <label>Service Owner<input id="svcOwner" type="text" placeholder="Team or person" autocomplete="name"></label>
               <label>Effective date<input id="svcDate" type="text" placeholder="Pick or type YYYY-MM-DD" autocomplete="off"></label>
               <label>Service ID<input id="svcId" type="text" placeholder="Internal ID" autocomplete="off"></label>
             </div>
+          </fieldset>
+          <fieldset class="form-fieldset">
+            <legend>Business Context <span class="hint" style="font-weight:400">(used in Business Card export)</span></legend>
+            <div class="grid two">
+              <label>Business Owner<input id="svcBusinessOwner" type="text" placeholder="Business unit or person" autocomplete="name"></label>
+              <label>Review Date<input id="svcReviewDate" type="text" placeholder="YYYY-MM-DD" autocomplete="off"></label>
+            </div>
+            <div class="grid two">
+              <label>Target Requesters<input id="svcTargetRequesters" type="text" placeholder="e.g. All employees, IT Users"></label>
+              <label>Eligibility / Who Can Request<input id="svcEligibility" type="text" placeholder="e.g. Full-time employees in IT department"></label>
+            </div>
+            <label>Business Purpose &amp; Value<textarea id="svcBusinessPurpose" rows="2" placeholder="Why this service exists and what business value it provides."></textarea></label>
+            <label>Out of Scope<textarea id="svcOutOfScope" rows="2" placeholder="What this service does not cover."></textarea></label>
           </fieldset>
         </section>
 
@@ -171,89 +198,141 @@
 
         <section class="panel" data-panel="sla">
           <h2>SLA & KPIs</h2>
-          <p class="hint panel-intro">SLA block text appears on the printed card. KPI “Responsibility” can pick from Actors or any free-text owner.</p>
+          <p class="hint panel-intro">Keep this page focused on service commitments, escalation, and measurable outcomes. Advanced fields stay available without blocking the main flow.</p>
           <div class="tab-guide">
             <h3 class="tab-guide__title">What to fill in | ماذا يجب إدخاله</h3>
             <p class="tab-guide__text"><strong>EN:</strong> Define service commitments, escalation thresholds, and measurable KPI targets for governance.</p>
             <p class="tab-guide__text" dir="rtl"><strong>AR:</strong> حدّد التزامات مستوى الخدمة ونقاط التصعيد ومؤشرات الأداء القابلة للقياس للحوكمة.</p>
-            <p class="tab-guide__text"><strong>Required from user:</strong> SLA Service, Requester(s), Support Group, Controls, Duration, plus at least one KPI (name, formula, target, owner, frequency).</p>
+            <p class="tab-guide__text"><strong>Required from user:</strong> Requester(s), Support Group, Duration, and at least one KPI. Use the quick actions when defaults are acceptable.</p>
           </div>
-          <div class="sla-kpi-insights" aria-live="polite">
-            <div class="sla-kpi-insight">
-              <span class="sla-kpi-insight__label">SLA Duration</span>
-              <strong id="slaDurationDays">-</strong>
-            </div>
-            <div class="sla-kpi-insight">
-              <span class="sla-kpi-insight__label">Notification Gap</span>
-              <strong id="slaNotifGap">-</strong>
-            </div>
-            <div class="sla-kpi-insight">
-              <span class="sla-kpi-insight__label">KPI Count</span>
-              <strong id="kpiCount">0</strong>
-            </div>
-            <div class="sla-kpi-insight">
-              <span class="sla-kpi-insight__label">Setup Health</span>
-              <strong id="slaHealth">Needs input</strong>
-            </div>
-          </div>
+          <div class="sla-page">
+            <section class="sla-card sla-card--primary">
+              <div class="sla-card__head">
+                <div>
+                  <h3>SLA Summary</h3>
+                  <p class="hint">The minimum details needed for the exported service card.</p>
+                </div>
+                <label class="toggle-row">
+                  <input id="slaMirrorService" type="checkbox" checked>
+                  <span>Match Identity name</span>
+                </label>
+              </div>
+              <div class="sla-kpi-insights" aria-live="polite">
+                <div class="sla-kpi-insight">
+                  <span class="sla-kpi-insight__label">SLA Duration</span>
+                  <strong id="slaDurationDays">-</strong>
+                </div>
+                <div class="sla-kpi-insight">
+                  <span class="sla-kpi-insight__label">KPI Count</span>
+                  <strong id="kpiCount">0</strong>
+                </div>
+                <div class="sla-kpi-insight">
+                  <span class="sla-kpi-insight__label">Setup Health</span>
+                  <strong id="slaHealth">Needs input</strong>
+                </div>
+              </div>
+              <div class="grid two">
+                <label>Service<input id="slaService" type="text" placeholder="Server Request" autocomplete="off"></label>
+                <label>Requester(s)<input id="slaRequester" type="text" list="slaRequesterOptions" placeholder="IT Users" autocomplete="off"></label>
+                <label>Support Group(s)<input id="slaSupportGroup" type="text" placeholder="System Team, Network Team" autocomplete="off"></label>
+                <label>Duration<input id="slaDuration" type="text" list="durationOptions" value="5BD" autocomplete="off"></label>
+              </div>
+              <div class="sla-actions-row">
+                <button id="btnSlaSmartFill" type="button" class="btn btn-secondary btn-sm">Smart-fill SLA</button>
+                <span class="hint">Quick duration</span>
+                <button id="btnDuration3BD" type="button" class="btn btn-secondary btn-sm">3BD</button>
+                <button id="btnDuration5BD" type="button" class="btn btn-secondary btn-sm">5BD</button>
+                <button id="btnDuration10BD" type="button" class="btn btn-secondary btn-sm">10BD</button>
+              </div>
+            </section>
 
-          <fieldset class="form-fieldset">
-            <legend>SLA essentials</legend>
-            <label class="checkbox-row">
-              <input id="slaMirrorService" type="checkbox" checked>
-              <span>Match Identity — Service field follows Service Name (EN)</span>
-            </label>
-            <div class="sla-kpi-actions">
-              <button id="btnSlaSmartFill" type="button" class="btn btn-secondary btn-sm">Smart-fill SLA</button>
-              <button id="btnSlaAutoNotif" type="button" class="btn btn-secondary btn-sm">Auto notifications</button>
-            </div>
-            <div class="grid two">
-              <label>Service<input id="slaService" type="text" placeholder="Server Request" autocomplete="off"></label>
-              <label>Requester(s)<input id="slaRequester" type="text" placeholder="IT Users" autocomplete="off"></label>
-              <label>Support Group(s)<input id="slaSupportGroup" type="text" placeholder="System Team, Network Team" autocomplete="off"></label>
-              <label>Duration<input id="slaDuration" type="text" value="5BD" autocomplete="off"></label>
-            </div>
-            <p class="hint">You can assign multiple teams using commas (example: <em>System Team, Network Team, Monitoring Team</em>).</p>
-            <div class="sla-kpi-actions">
-              <span class="hint">Quick duration:</span>
-              <button id="btnDuration3BD" type="button" class="btn btn-secondary btn-sm">3BD</button>
-              <button id="btnDuration5BD" type="button" class="btn btn-secondary btn-sm">5BD</button>
-              <button id="btnDuration10BD" type="button" class="btn btn-secondary btn-sm">10BD</button>
-            </div>
-          </fieldset>
+            <section class="sla-card">
+              <div class="sla-card__head">
+                <div>
+                  <h3>Escalation</h3>
+                  <p class="hint">Who gets notified as the SLA gets close to breach.</p>
+                </div>
+                <button id="btnSlaAutoNotif" type="button" class="btn btn-secondary btn-sm">Auto notifications</button>
+              </div>
+              <div class="sla-escalation-grid">
+                <label>First notification owner<input id="notif1Who" type="text" placeholder="System Team Supervisor" autocomplete="off"></label>
+                <label>First threshold<input id="notif1When" type="text" list="slaThresholdOptions" placeholder="75%" autocomplete="off"></label>
+                <label>Second notification owner<input id="notif2Who" type="text" placeholder="System Team Manager" autocomplete="off"></label>
+                <label>Second threshold<input id="notif2When" type="text" list="slaThresholdOptions" placeholder="90%" autocomplete="off"></label>
+              </div>
+              <div class="sla-kpi-insights sla-kpi-insights--compact">
+                <div class="sla-kpi-insight">
+                  <span class="sla-kpi-insight__label">Notification Gap</span>
+                  <strong id="slaNotifGap">-</strong>
+                </div>
+                <p id="slaNotificationPreview" class="hint sla-kpi-note">Notifications preview will appear here.</p>
+              </div>
+            </section>
 
-          <details class="sla-advanced">
-            <summary>Advanced SLA and escalation settings</summary>
-            <fieldset class="form-fieldset">
-              <legend>Service controls</legend>
+            <details class="sla-advanced">
+              <summary>Advanced prerequisites and controls</summary>
               <div class="grid two">
                 <label>Pre-Requisites<input id="slaPrerequisites" type="text" placeholder="-" autocomplete="off"></label>
-                <label>Controls<input id="slaControls" type="text" placeholder="Multiple Approvals Required" autocomplete="off"></label>
+                <label>Controls<input id="slaControls" type="text" list="slaControlOptions" placeholder="Multiple Approvals Required" autocomplete="off"></label>
               </div>
-            </fieldset>
-            <fieldset class="form-fieldset">
-              <legend>Approval notifications</legend>
-              <div class="grid two">
-                <label>Notification 1 — who<input id="notif1Who" type="text" placeholder="System Team Supervisor" autocomplete="off"></label>
-                <label>Notification 1 — when<input id="notif1When" type="text" placeholder="75%" autocomplete="off"></label>
-                <label>Notification 2 — who<input id="notif2Who" type="text" placeholder="System Team Manager" autocomplete="off"></label>
-                <label>Notification 2 — when<input id="notif2When" type="text" placeholder="90%" autocomplete="off"></label>
+            </details>
+
+            <section class="sla-card sla-card--wide">
+              <div class="sla-card__head">
+                <div>
+                  <h3>SLA Parts</h3>
+                  <p class="hint">Use this when multiple teams own different parts of the timeline.</p>
+                </div>
+                <button id="btnSlaSplitByTeams" type="button" class="btn btn-secondary btn-sm">Generate parts from teams</button>
               </div>
-            </fieldset>
-          </details>
-          <p id="slaNotificationPreview" class="hint sla-kpi-note">Notifications preview will appear here.</p>
-          <h3>SLA Parts (multi-team split)</h3>
-          <p class="hint panel-intro">Split the request into parts/phases. Each part can have its own responsible team and SLA duration.</p>
-          <div class="sla-kpi-actions">
-            <button id="btnSlaSplitByTeams" type="button" class="btn btn-secondary btn-sm">Generate parts from teams</button>
+              <div id="slaPartsEditor" class="table-editor"></div>
+            </section>
+
+            <section class="sla-card sla-card--wide">
+              <div class="sla-card__head">
+                <div>
+                  <h3>KPIs</h3>
+                  <p class="hint">Define measurable outcomes for reporting and governance.</p>
+                </div>
+                <div class="sla-actions-row">
+                  <button id="btnKpiStarterPack" type="button" class="btn btn-secondary btn-sm">Add KPI starter pack</button>
+                  <button id="btnKpiAddBlank" type="button" class="btn btn-secondary btn-sm">Add blank row</button>
+                </div>
+              </div>
+              <div id="kpisEditor" class="table-editor"></div>
+            </section>
           </div>
-          <div id="slaPartsEditor" class="table-editor"></div>
-          <h3>KPIs</h3>
-          <div class="sla-kpi-actions">
-            <button id="btnKpiStarterPack" type="button" class="btn btn-secondary btn-sm">Add KPI starter pack</button>
-            <button id="btnKpiAddBlank" type="button" class="btn btn-secondary btn-sm">Add blank KPI row</button>
-          </div>
-          <div id="kpisEditor" class="table-editor"></div>
+
+          <datalist id="durationOptions">
+            <option value="Same Day"></option>
+            <option value="1 Business Day"></option>
+            <option value="2 Business Days"></option>
+            <option value="3BD"></option>
+            <option value="5BD"></option>
+            <option value="10BD"></option>
+          </datalist>
+          <datalist id="slaRequesterOptions">
+            <option value="IT Users"></option>
+            <option value="Business Users"></option>
+            <option value="All Employees"></option>
+            <option value="Service Desk"></option>
+            <option value="Authorized Requesters"></option>
+          </datalist>
+          <datalist id="slaControlOptions">
+            <option value="Standard Fulfillment"></option>
+            <option value="Multiple Approvals Required"></option>
+            <option value="Manager Approval Required"></option>
+            <option value="Business Owner Approval Required"></option>
+            <option value="Security Review Required"></option>
+            <option value="Architecture Review Required"></option>
+          </datalist>
+          <datalist id="slaThresholdOptions">
+            <option value="50%"></option>
+            <option value="75%"></option>
+            <option value="80%"></option>
+            <option value="90%"></option>
+            <option value="95%"></option>
+          </datalist>
         </section>
       </div>
     </div>

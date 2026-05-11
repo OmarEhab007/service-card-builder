@@ -40,8 +40,10 @@ export class TableEditor {
       return `<span class="table-editor__readonly" title="Synced from elsewhere — edit in the source tab">${safeValue || "—"}</span>`;
     }
     if (col.type === "select") {
+      const options = col.options || [];
+      const selectOptions = value && !options.includes(value) ? [value, ...options] : options;
       return `<select data-row="${rowIndex}" data-key="${col.key}" aria-label="${esc(col.label)}">
-        ${(col.options || [])
+        ${selectOptions
           .map((option) => `<option value="${esc(option)}"${option === value ? " selected" : ""}>${esc(option)}</option>`)
           .join("")}
       </select>`;
@@ -73,16 +75,14 @@ export class TableEditor {
     return col.options || [];
   }
 
-  _columnWeight(col) {
-    if (col.readonly) return 1.3;
-    if (col.type === "textarea") return 1.9;
-    if (col.key === "step") return 2.2;
-    if (col.key === "values" || col.key === "questionAr") return 1.8;
-    if (col.key === "nameEn" || col.key === "nameAr") return 1.5;
-    if (col.key === "type" || col.key === "mandatory") return 1.1;
-    if (col.key === "duration" || col.key === "condition") return 1.2;
-    if (col.key === "dependency") return 1.4;
-    return 1.25;
+  _columnMinWidth(col) {
+    if (col.type === "textarea") return 250;
+    if (col.readonly || col.key === "step") return 280;
+    if (col.key === "values" || col.key === "questionAr") return 240;
+    if (col.key === "email" || col.key === "emails") return 220;
+    if (col.key === "condition" || col.key === "dependency") return 210;
+    if (col.key === "type" || col.key === "mandatory") return 150;
+    return 190;
   }
 
   _ensureRows(state, key = this.stateKey) {
@@ -243,12 +243,14 @@ export class TableEditor {
     const leadCell = (rowIndex) =>
       this.structuralEdits
         ? `<td class="table-editor__lead">
+                  <span class="table-editor__lead-inner">
                     <span class="row-drag-handle" role="button" tabindex="-1" aria-label="Drag to reorder row ${
                       rowIndex + 1
                     }" title="Drag to reorder row"></span>
                     <span class="row-index" aria-hidden="true">${rowIndex + 1}</span>
+                  </span>
                   </td>`
-        : `<td class="table-editor__lead table-editor__lead--static"><span class="row-index" aria-hidden="true">${rowIndex + 1}</span></td>`;
+        : `<td class="table-editor__lead table-editor__lead--static"><span class="table-editor__lead-inner"><span class="row-index" aria-hidden="true">${rowIndex + 1}</span></span></td>`;
     const actionsCell = (rowIndex) =>
       this.structuralEdits
         ? `<td class="table-editor__actions">
@@ -265,23 +267,21 @@ export class TableEditor {
       ? `<button type="button" class="btn btn-primary btn-sm" data-action="add">${esc(this.addRowLabel)}</button>`
       : "";
 
-    const baseWeight = this.columns.reduce((sum, col) => sum + this._columnWeight(col), 0);
-    const leadWeight = 0.58;
-    const actionsWeight = this.structuralEdits ? 0.95 : 0;
-    const totalWeight = baseWeight + leadWeight + actionsWeight;
+    const leadColumnWidth = this.structuralEdits ? 64 : 52;
+    const actionsColumnWidth = this.structuralEdits ? 146 : 0;
+    const minTableWidth =
+      leadColumnWidth + actionsColumnWidth + this.columns.reduce((sum, col) => sum + this._columnMinWidth(col), 0);
     const colgroup = `
       <colgroup>
-        <col style="width:${((leadWeight / totalWeight) * 100).toFixed(2)}%">
-        ${this.columns
-          .map((col) => `<col style="width:${((this._columnWeight(col) / totalWeight) * 100).toFixed(2)}%">`)
-          .join("")}
-        ${this.structuralEdits ? `<col style="width:${((actionsWeight / totalWeight) * 100).toFixed(2)}%">` : ""}
+        <col style="width:${leadColumnWidth}px">
+        ${this.columns.map((col) => `<col style="width:${this._columnMinWidth(col)}px">`).join("")}
+        ${this.structuralEdits ? `<col style="width:${actionsColumnWidth}px">` : ""}
       </colgroup>
     `;
 
     this.mount.innerHTML = `
       <div class="table-editor-scroll">
-        <table>
+        <table style="min-width:${minTableWidth}px">
           ${colgroup}
           <thead>
             <tr>
