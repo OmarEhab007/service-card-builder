@@ -26,7 +26,7 @@ describe("computeReadiness", () => {
     expect(criticalFails.length).toBeGreaterThan(0);
   });
 
-  it("marks implementation mode as critical gap when set to none", () => {
+  it("shows implementation mode item as not-ok but non-critical when set to none", () => {
     const state = {
       ...enterpriseTemplate,
       bmcConfig: { ...enterpriseTemplate.bmcConfig, implementationMode: "none" }
@@ -34,7 +34,7 @@ describe("computeReadiness", () => {
     const { technical } = computeReadiness(state);
     const modeItem = technical.items.find((i) => i.label.includes("Implementation mode"));
     expect(modeItem.ok).toBe(false);
-    expect(modeItem.critical).toBe(true);
+    expect(modeItem.critical).toBe(false);
   });
 
   it("includes DWP-specific items only when mode is dwp or hybrid", () => {

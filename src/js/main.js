@@ -259,9 +259,29 @@ async function withLoadingButton(btn, action) {
   }
 }
 
-/** Confirm export if card has critical gaps. Returns true to proceed, false to abort. */
+/** Confirm export if card has gaps relevant to the selected export type. Returns true to proceed. */
 function confirmExportWarnings() {
-  const gaps = getCriticalGaps(getState());
+  const state = getState();
+  const type = getExportType();
+  const id = state.identity || {};
+  const isFilled = (v) => typeof v === "string" && v.trim().length > 0;
+
+  let gaps;
+  if (type === "full") {
+    gaps = getCriticalGaps(state);
+  } else if (type === "tech") {
+    gaps = [];
+    if (!isFilled(id.name)) gaps.push("Service name (EN) defined");
+    if (!isFilled(id.description)) gaps.push("Service description (EN) defined");
+    if ((state.bmcConfig?.implementationMode || "none") === "none") {
+      gaps.push("Implementation mode set (DWP / SRM / Hybrid)");
+    }
+  } else {
+    gaps = [];
+    if (!isFilled(id.name)) gaps.push("Service name (EN) defined");
+    if (!isFilled(id.description)) gaps.push("Service description (EN) defined");
+  }
+
   if (gaps.length === 0) return true;
   return window.confirm(
     `The service card has incomplete fields:\n\n\u2022 ${gaps.join("\n\u2022 ")}\n\nExport anyway?`
