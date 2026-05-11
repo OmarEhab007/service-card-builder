@@ -11,10 +11,12 @@ import { $, downloadFile } from "./utils/dom.js";
 import { getState, loadDraft, replaceState, subscribe, flushSave } from "./state/store.js";
 import { enterpriseTemplate } from "./state/template.js";
 import { exportHtml, exportBusinessCardHtml, exportTechBuildPackHtml, exportMarkdown, printPdf } from "./export/exporters.js";
-import { validateState, getExportWarnings } from "./validation/validator.js";
+import { validateState } from "./validation/validator.js";
+import { getCriticalGaps } from "./domain/readiness.js";
 import { initSvcDatePicker, bindIdentityFields, syncIdentityFields } from "./bind/identity.js";
 import { bindSlaFields, bindSlaKpiActions, syncSlaFields } from "./bind/sla.js";
 import { bindBmcConfigFields, syncBmcConfigFields } from "./bind/bmc-config.js";
+import { bindGovernanceFields, syncGovernanceFields, initReadinessPanel, renderReadinessPanel } from "./bind/governance.js";
 import {
   ACTOR_ROLE_OPTIONS,
   DURATION_OPTIONS,
@@ -37,6 +39,7 @@ function fillFormFromState() {
   syncIdentityFields(state, setControlIfNotFocused);
   syncSlaFields(state, setControlIfNotFocused);
   syncBmcConfigFields(state);
+  syncGovernanceFields(state);
 }
 
 function loadEnterpriseExample() {
@@ -256,12 +259,12 @@ async function withLoadingButton(btn, action) {
   }
 }
 
-/** Confirm export if card has warnings. Returns true to proceed, false to abort. */
+/** Confirm export if card has critical gaps. Returns true to proceed, false to abort. */
 function confirmExportWarnings() {
-  const warnings = getExportWarnings(getState());
-  if (warnings.length === 0) return true;
+  const gaps = getCriticalGaps(getState());
+  if (gaps.length === 0) return true;
   return window.confirm(
-    `The service card has incomplete fields:\n\n\u2022 ${warnings.join("\n\u2022 ")}\n\nExport anyway?`
+    `The service card has incomplete fields:\n\n\u2022 ${gaps.join("\n\u2022 ")}\n\nExport anyway?`
   );
 }
 
@@ -355,8 +358,15 @@ function init() {
   bindIdentityFields();
   bindSlaFields(fillFormFromState);
   bindBmcConfigFields();
+  bindGovernanceFields();
   initEditors();
   bindSlaKpiActions(fillFormFromState, editorRefs);
+  initReadinessPanel();
+
+  // Render readiness panel immediately when user navigates to that tab
+  document.querySelector('button[data-panel="readiness"]')?.addEventListener("click", () => {
+    renderReadinessPanel(getState());
+  });
   wireCrossTabRefresh();
   wireTopActions();
 

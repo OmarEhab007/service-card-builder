@@ -1,5 +1,16 @@
 import { FULFILLMENT_DEFAULT, normalizeFulfillmentConfig } from "./fulfillment.js";
 
+const DEFAULT_GOVERNANCE = {
+  preparedBy: "",
+  reviewedBy: "",
+  approvedBy: "",
+  approvalDate: "",
+  uatCompleted: false,
+  businessOwnerSignedOff: false,
+  itilAligned: false,
+  publicationNotes: ""
+};
+
 const DEFAULT_BMC_CONFIG = {
   implementationMode: "none",
   dwp: {
@@ -119,6 +130,11 @@ export function reconcileState(next) {
   return next;
 }
 
+function normalizeGovernance(raw) {
+  const base = raw && typeof raw === "object" ? raw : {};
+  return { ...DEFAULT_GOVERNANCE, ...base };
+}
+
 function normalizeBmcConfig(raw) {
   const base = raw && typeof raw === "object" ? raw : {};
   const dwp = base.dwp && typeof base.dwp === "object" ? base.dwp : {};
@@ -151,6 +167,7 @@ function normalizeStateShape(next) {
   if (!Array.isArray(next.slaParts)) next.slaParts = [];
   if (!Array.isArray(next.kpis)) next.kpis = [];
   next.bmcConfig = normalizeBmcConfig(next.bmcConfig);
+  next.governance = normalizeGovernance(next.governance);
   if (!next.sla || typeof next.sla !== "object") next.sla = {};
   const svc = next.sla.service || "";
   const idName = (next.identity && next.identity.name) || "";
@@ -187,6 +204,7 @@ const state = {
   support: [],
   slaParts: [],
   bmcConfig: { ...DEFAULT_BMC_CONFIG, dwp: { ...DEFAULT_BMC_CONFIG.dwp }, srm: { ...DEFAULT_BMC_CONFIG.srm } },
+  governance: { ...DEFAULT_GOVERNANCE },
   sla: {
     service: "Server Request",
     requester: "",

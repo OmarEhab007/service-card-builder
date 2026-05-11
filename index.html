@@ -54,6 +54,7 @@
         <button class="section-tab" type="button" data-panel="support">Support</button>
         <button class="section-tab" type="button" data-panel="sla">SLA & KPIs</button>
         <button class="section-tab section-tab--tech" type="button" data-panel="bmcConfig">BMC Config</button>
+        <button class="section-tab section-tab--readiness" type="button" data-panel="readiness">Readiness</button>
       </nav>
 
       <div class="panels" id="panels">
@@ -406,6 +407,38 @@
             <legend>Deployment &amp; Localization</legend>
             <label>Deployment &amp; Validation Checklist<textarea id="bmc_deploymentChecklist" rows="3" placeholder="List steps to validate before going live."></textarea></label>
             <label>Localization Requirements<textarea id="bmc_localizationNotes" rows="2" placeholder="Arabic translations, RTL layout, locale-specific notes."></textarea></label>
+          </fieldset>
+        </section>
+
+        <section class="panel" data-panel="readiness">
+          <h2>Governance Readiness</h2>
+          <p class="hint panel-intro">Track completeness across five checklists. Green means done, orange means recommended but optional, red means a critical gap that will block export.</p>
+
+          <div class="tab-guide">
+            <h3 class="tab-guide__title">How to use</h3>
+            <p class="tab-guide__text"><strong>Checklists</strong> update automatically as you fill in other tabs. Expand each section to see exactly what is missing. Fill in the <strong>Sign-off</strong> fields below to record governance approval.</p>
+          </div>
+
+          <!-- Live readiness checklist (rendered by governance.js) -->
+          <div id="readinessPanel" class="readiness-panel"></div>
+
+          <!-- Sign-off fields (stored in state.governance) -->
+          <fieldset class="form-fieldset form-fieldset--governance">
+            <legend>Sign-off &amp; Approval</legend>
+            <div class="grid three">
+              <label>Prepared By<input id="gov_preparedBy" type="text" placeholder="Name and role" autocomplete="name"></label>
+              <label>Reviewed By<input id="gov_reviewedBy" type="text" placeholder="Name and role" autocomplete="name"></label>
+              <label>Approved By<input id="gov_approvedBy" type="text" placeholder="Name and role" autocomplete="name"></label>
+            </div>
+            <div class="grid two">
+              <label>Approval Date<input id="gov_approvalDate" type="text" placeholder="YYYY-MM-DD" autocomplete="off"></label>
+              <label>Publication Notes<textarea id="gov_publicationNotes" rows="2" placeholder="Notes for the publication or distribution of this service card."></textarea></label>
+            </div>
+            <div class="gov-checks">
+              <label class="gov-check-label"><input id="gov_businessOwnerSignedOff" type="checkbox"> Business owner has reviewed and signed off</label>
+              <label class="gov-check-label"><input id="gov_itilAligned" type="checkbox"> ITIL alignment confirmed (service is predefined, requestable, has owner, SLA, and KPIs)</label>
+              <label class="gov-check-label"><input id="gov_uatCompleted" type="checkbox"> UAT completed — acceptance criteria validated in staging</label>
+            </div>
           </fieldset>
         </section>
       </div>
