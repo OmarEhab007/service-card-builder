@@ -10,10 +10,11 @@ import { TableEditor } from "./ui/table-editor.js";
 import { $, downloadFile } from "./utils/dom.js";
 import { getState, loadDraft, replaceState, subscribe, flushSave } from "./state/store.js";
 import { enterpriseTemplate } from "./state/template.js";
-import { exportHtml, exportBusinessCardHtml, exportMarkdown, printPdf } from "./export/exporters.js";
+import { exportHtml, exportBusinessCardHtml, exportTechBuildPackHtml, exportMarkdown, printPdf } from "./export/exporters.js";
 import { validateState, getExportWarnings } from "./validation/validator.js";
 import { initSvcDatePicker, bindIdentityFields, syncIdentityFields } from "./bind/identity.js";
 import { bindSlaFields, bindSlaKpiActions, syncSlaFields } from "./bind/sla.js";
+import { bindBmcConfigFields, syncBmcConfigFields } from "./bind/bmc-config.js";
 import {
   ACTOR_ROLE_OPTIONS,
   DURATION_OPTIONS,
@@ -35,6 +36,7 @@ function fillFormFromState() {
   const state = getState();
   syncIdentityFields(state, setControlIfNotFocused);
   syncSlaFields(state, setControlIfNotFocused);
+  syncBmcConfigFields(state);
 }
 
 function loadEnterpriseExample() {
@@ -126,9 +128,10 @@ function initEditors() {
         { key: "values", label: "Field Initial Values", type: "textarea" },
         { key: "questionAr", label: "Arabic Question", type: "textarea" },
         { key: "mandatory", label: "Mandatory", type: "select", options: ["X", "-"] },
-        { key: "dependency", label: "Dependency" }
+        { key: "dependency", label: "Dependency" },
+        { key: "bmcVariable", label: "BMC Variable", placeholder: "e.g. z1D_Question1" }
       ],
-      defaultRow: { nameEn: "", nameAr: "", type: "Text", values: "", questionAr: "", mandatory: "X", dependency: "-" },
+      defaultRow: { nameEn: "", nameAr: "", type: "Text", values: "", questionAr: "", mandatory: "X", dependency: "-", bmcVariable: "" },
       emptyMessage: "Each row is one form field. Use \u201cCopy\u201d on a similar row to duplicate it, then adjust text \u2014 it is faster than starting from scratch.",
       addRowLabel: "Add form field"
     }),
@@ -291,7 +294,7 @@ function wireTopActions() {
   btnExportHtml.addEventListener("click", () => {
     if (!confirmExportWarnings()) return;
     const type = getExportType();
-    const exportFn = type === "business" ? exportBusinessCardHtml : exportHtml;
+    const exportFn = type === "tech" ? exportTechBuildPackHtml : type === "full" ? exportHtml : exportBusinessCardHtml;
     withLoadingButton(btnExportHtml, () =>
       exportFn(getState()).catch(() => alert("Could not export HTML. Check that the app is served over http(s) and try again."))
     );
@@ -351,6 +354,7 @@ function init() {
   fillFormFromState();
   bindIdentityFields();
   bindSlaFields(fillFormFromState);
+  bindBmcConfigFields();
   initEditors();
   bindSlaKpiActions(fillFormFromState, editorRefs);
   wireCrossTabRefresh();

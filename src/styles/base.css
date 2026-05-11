@@ -88,3 +88,45 @@ select:focus {
 .form-fieldset .grid {
   margin: 0;
 }
+
+.form-fieldset--tech {
+  border-color: #c7d2e8;
+  background: rgba(239, 246, 255, 0.5);
+}
+
+.form-fieldset--tech legend {
+  color: #1e40af;
+}
+
+.bmc-mode-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bmc-mode-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 10px;
+  border: 1px solid var(--neutral-200);
+  border-radius: 999px;
+  background: var(--neutral-0);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--neutral-600);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.bmc-mode-option:has(input:checked) {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.08);
+  color: #1e40af;
+}
+
+.bmc-mode-option input[type="radio"] {
+  accent-color: #3b82f6;
+  width: 14px;
+  height: 14px;
+}
