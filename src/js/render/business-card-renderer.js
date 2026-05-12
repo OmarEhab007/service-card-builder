@@ -120,6 +120,8 @@ export function renderBusinessCard(state, opts = {}) {
   const support = state.support || [];
   const kpis = state.kpis || [];
   const workflow = state.workflow || [];
+  const fields = state.fields || [];
+  const gov = state.governance || {};
 
   const root = normalizeAssetBase(opts.assetBase);
   const styles = businessCardStyles(opts);
@@ -136,6 +138,10 @@ export function renderBusinessCard(state, opts = {}) {
   const ownershipRows = [
     { label: "Service Owner", value: id.owner || "-" },
     { label: "Business Owner", value: id.businessOwner || "-" },
+    { label: "Prepared By", value: gov.preparedBy || "-" },
+    { label: "Reviewed By", value: gov.reviewedBy || "-" },
+    { label: "Approved By", value: gov.approvedBy || "-" },
+    { label: "Approval Date", value: gov.approvalDate || "-" },
     { label: "Version", value: id.version || "1.0" },
     { label: "Effective Date", value: id.date || "-" },
     { label: "Review Date", value: id.reviewDate || "-" }
@@ -198,6 +204,22 @@ export function renderBusinessCard(state, opts = {}) {
     </section>
 
     ${
+      fields.length > 0
+        ? `<section class="bc-section">
+      <h2>Requester Information Required</h2>
+      <div class="bc-card">
+        <table class="bc-kpi-table">
+          <thead><tr><th>Information Needed</th><th>Required</th><th>Notes</th></tr></thead>
+          <tbody>
+            ${fields.map((f) => `<tr><td>${esc(f.nameEn)}</td><td>${f.mandatory === "X" ? "Required" : "Optional"}</td><td>${f.dependency && f.dependency !== "-" ? esc(f.dependency) : ""}</td></tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </section>`
+        : ""
+    }
+
+    ${
       journeySteps
         ? `<section class="bc-section bc-journey">
       <h2>Request Journey</h2>
@@ -257,8 +279,6 @@ export function renderBusinessCard(state, opts = {}) {
       <h2>Ownership &amp; Review</h2>
       <div class="bc-stamp">
         ${ownershipRows.map((r) => `<div class="bc-stamp-cell"><dt>${esc(r.label)}</dt><dd>${esc(r.value)}</dd></div>`).join("")}
-        <div class="bc-stamp-cell"><dt>Approved By</dt><dd></dd></div>
-        <div class="bc-stamp-cell"><dt>Approval Date</dt><dd></dd></div>
       </div>
     </section>
 

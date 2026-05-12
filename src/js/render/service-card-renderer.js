@@ -1,320 +1,118 @@
-﻿import { esc } from "../utils/dom.js";
-import { getActorPalette, uniqueWorkflowActors, outcomeTone } from "./actor-colors.js";
-import { buildCardStyles } from "./card-styles.js";
+import { renderBusinessCard } from "./business-card-renderer.js";
+import { renderTechnicalBuildPack } from "./technical-build-pack-renderer.js";
+import { esc } from "../utils/dom.js";
 
-/** Match app tokens - Loew @font-face loaded via link to fonts/loew-face.css */
-const FONT_STACK = '"Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif';
-const FONT_AR_STACK = '"Loew Next Arabic", "Segoe UI", "Arabic UI Text", Tahoma, sans-serif';
-
-/**
- * @param {{
- *   assetBase?: string,
- *   embeddedFontCss?: string,
- *   embeddedBackgroundDataUri?: string,
- *   embeddedVisualsDataUri?: string
- * }} [opts]
- * Self-contained output: set `embeddedFontCss` + data URIs so the file works from any folder without `/public`.
- */
-function normalizeAssetBase(assetBase) {
-  if (assetBase === null || typeof assetBase === "undefined" || assetBase === "") return "/";
-  const s = String(assetBase);
-  return s.endsWith("/") ? s : `${s}/`;
+function extractStyles(html) {
+  const out = [];
+  const re = /<style[^>]*>([\s\S]*?)<\/style>/gi;
+  let m;
+  while ((m = re.exec(html)) !== null) out.push(m[1]);
+  return out.join("\n");
 }
 
+function extractFontLink(html) {
+  const m = html.match(/<link[^>]+loew-face\.css[^>]*>/i);
+  return m ? m[0] : "";
+}
+
+function extractBody(html) {
+  const m = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  return m ? m[1].trim() : html;
+}
+
+/**
+ * Full Governance Pack — combines Business Service Card, Technical BMC Build Pack,
+ * and Governance sign-off into a single document.
+ *
+ * @param {object} state
+ * @param {{ assetBase?: string, embeddedFontCss?: string, embeddedBackgroundDataUri?: string, embeddedVisualsDataUri?: string }} [opts]
+ */
 export function renderServiceCard(state, opts = {}) {
-  const actors = state.actors || [];
-  const workflow = state.workflow || [];
-  const fields = state.fields || [];
-  const raci = state.raci || [];
-  const support = state.support || [];
-  const kpis = state.kpis || [];
-  const sla = state.sla || {};
-  const slaParts = state.slaParts || [];
-  const raciRoles = Array.isArray(state.raciConfig?.roles) ? state.raciConfig.roles : [];
-  const root = normalizeAssetBase(opts.assetBase);
-  const bgUrl = opts.embeddedBackgroundDataUri || `${root}Background.svg`;
-  const visualsUrl = opts.embeddedVisualsDataUri || `${root}Visuals.svg`;
-  const brand = {
-    primary: "#1e40af",
-    primaryDark: "#1e3a8a",
-    surface: "#f1f5f9",
-    ink: "#0f172a",
-    muted: "#64748b",
-    border: "#e2e8f0",
-    accent: "#2563eb"
-  };
+  const id = state.identity || {};
+  const gov = state.governance || {};
 
-  const styles = buildCardStyles({ fontStack: FONT_STACK, fontArStack: FONT_AR_STACK, bgUrl, visualsUrl, brand });
+  const bcHtml = renderBusinessCard(state, opts);
+  const tbpHtml = renderTechnicalBuildPack(state, opts);
 
-  const status = state.identity.status || "";
-  const statusToneClass = status && !status.toLowerCase().includes("active") ? " status-pill--neutral" : "";
+  const fontLink = extractFontLink(bcHtml);
+  const bcStyles = extractStyles(bcHtml);
+  const tbpStyles = extractStyles(tbpHtml);
+  const bcBody = extractBody(bcHtml);
+  const tbpBody = extractBody(tbpHtml);
 
-  const legendItems = uniqueWorkflowActors(workflow);
-  const legendHtml =
-    legendItems.length === 0
-      ? ""
-      : `<div class="workflow-legend">
-        <div class="workflow-legend-title">Team roles</div>
-        <div class="workflow-legend-chips">
-          ${legendItems
-            .map((label) => {
-              const { solid } = getActorPalette(label);
-              return `<span class="legend-chip" style="--sw:${solid}"><span class="legend-swatch"></span>${esc(label)}</span>`;
-            })
-            .join("")}
-        </div>
-      </div>`;
+  const name = esc(id.name || "Service");
 
-  const workflowRows =
-    workflow.length === 0
-      ? "<tr><td colspan='5' class='empty'>No workflow steps defined.</td></tr>"
-      : workflow
-          .map((w, i) => {
-            const { solid, light } = getActorPalette(w.actor);
-            const ot = outcomeTone(w.type);
-            const cond = w.condition && String(w.condition).trim() && String(w.condition).trim() !== "-";
-            return `<tr style="--row-solid:${solid};--row-light:${light}">
-            <td class="wf-num"><span class="step-disc">${i + 1}</span></td>
-            <td class="wf-actor">${esc(w.actor)}</td>
-            <td class="wf-action">${esc(w.step)}</td>
-            <td class="wf-meta"><span class="type-chip">${esc(w.type)}</span><div class="wf-sub">${esc(w.duration)}</div>${cond ? `<div class="wf-sub">${esc(w.condition)}</div>` : ""}</td>
-            <td class="wf-out"><span class="outcome-pill ${ot.class}">${esc(ot.label)}</span></td>
-          </tr>`;
-          })
-          .join("");
+  const govStampCells = [
+    { label: "Prepared By", value: gov.preparedBy },
+    { label: "Reviewed By", value: gov.reviewedBy },
+    { label: "Approved By", value: gov.approvedBy },
+    { label: "Approval Date", value: gov.approvalDate },
+    { label: "Next Review Date", value: id.reviewDate }
+  ]
+    .map((r) => `<div class="gov-stamp-cell"><dt>${esc(r.label)}</dt><dd>${esc(r.value || "")}</dd></div>`)
+    .join("");
 
-  const flowPathHtml =
-    workflow.length === 0
-      ? ""
-      : `<div class="flow-path-wrap">
-          <div class="flow-path-title">Process sequence</div>
-          <div class="flow-path">
-            ${workflow
-              .map((w, i) => {
-                const { solid } = getActorPalette(w.actor);
-                const arrow = i === 0 ? "" : '<span class="flow-arrow">&rarr;</span>';
-                return `${arrow}<span class="flow-pill" style="--fp:${solid}">${esc(w.actor)}</span>`;
-              })
-              .join("")}
-          </div>
-        </div>`;
-
-  const byActor = new Map();
-  workflow.forEach((w) => {
-    const k = String(w.actor || "-").trim();
-    if (!byActor.has(k)) byActor.set(k, []);
-    byActor.get(k).push(w.step);
-  });
-  const respCardsHtml =
-    byActor.size === 0
-      ? ""
-      : `<div class="resp-grid">
-          ${[...byActor.entries()]
-            .map(([actor, steps]) => {
-              const { solid } = getActorPalette(actor);
-              return `<div class="resp-card" style="--rc:${solid}">
-                <h4>${esc(actor)}</h4>
-                <ul>${steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ul>
-              </div>`;
-            })
-            .join("")}
-        </div>`;
-
-  const totalSteps = workflow.length || 0;
-  const approvalCount = workflow.filter((w) => String(w.type || "").toLowerCase() === "decision").length;
-  const executionCount = workflow.filter((w) => String(w.type || "").toLowerCase() !== "decision").length;
-  const supportGroup = sla.supportGroup || support.map((row) => row.supportGroup).filter(Boolean).join(", ") || "-";
-  const kpiCount = kpis.length || 0;
+  const govChecks = [
+    { checked: gov.businessOwnerSignedOff, label: "Business owner has reviewed and signed off" },
+    { checked: gov.itilAligned, label: "ITIL alignment confirmed — service is predefined, requestable, has owner, SLA, and KPIs" },
+    { checked: gov.uatCompleted, label: "UAT completed — acceptance criteria validated in staging" }
+  ]
+    .map((c) => `<li class="${c.checked ? "is-checked" : "is-unchecked"}">${esc(c.label)}</li>`)
+    .join("");
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${esc(state.identity.name || "Service Card")}</title>
-  ${opts.embeddedFontCss ? `<style>${opts.embeddedFontCss}</style>` : `<link rel="stylesheet" href="${root}fonts/loew-face.css">`}
-  <style>${styles}</style>
+  <title>Full Governance Pack — ${name}</title>
+  ${fontLink}
+  <style>${tbpStyles}</style>
+  <style>${bcStyles}</style>
+  <style>
+    .fgp-part-header { background: #1e3a8a; color: #fff; font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; padding: .5rem 1.5rem; margin: 0; font-family: "Segoe UI", system-ui, sans-serif; }
+    .fgp-divider { page-break-before: always; border: none; border-top: 4px solid #1e40af; margin: 2rem 0 1.5rem; }
+    .gov-section { max-width: 860px; margin: 0 auto; padding: 1.5rem 1.5rem 2.5rem; font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif; }
+    .gov-section h2 { font-size: 1.05rem; font-weight: 700; color: #1e40af; border-bottom: 2px solid #e2e8f0; padding-bottom: .35rem; margin-bottom: 1rem; }
+    .gov-stamp { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .75rem; }
+    .gov-stamp-cell { border: 1px solid #e2e8f0; border-radius: 6px; padding: .6rem .75rem; }
+    .gov-stamp-cell dt { font-size: .68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
+    .gov-stamp-cell dd { margin: 0; font-size: .85rem; color: #0f172a; min-height: 1.8rem; border-top: 1px solid #e2e8f0; margin-top: .4rem; padding-top: .3rem; }
+    .gov-checklist { list-style: none; margin: .5rem 0 0; padding: 0; }
+    .gov-checklist li { padding: .35rem 0; font-size: .9rem; display: flex; align-items: center; gap: .6rem; }
+    .gov-checklist li.is-checked { color: #0f172a; }
+    .gov-checklist li.is-unchecked { color: #94a3b8; }
+    .gov-checklist li.is-checked::before { content: "\\2611"; color: #2563eb; font-size: 1rem; }
+    .gov-checklist li.is-unchecked::before { content: "\\2610"; font-size: 1rem; }
+    .gov-notes { font-size: .9rem; color: #0f172a; line-height: 1.6; margin: .35rem 0 0; }
+    .gov-footer { text-align: center; padding: 1.5rem; font-size: .72rem; color: #94a3b8; border-top: 1px solid #e2e8f0; margin-top: 2rem; font-family: "Segoe UI", system-ui, sans-serif; }
+  </style>
 </head>
 <body>
-  <div class="doc">
-    <header class="hdr">
-      <div class="hdr-banner">
-        <div class="hdr-banner-inner">
-          <div class="hdr-banner-main">
-            <div>
-              <p class="hdr-kicker">Service Card</p>
-              <h1 class="hdr-banner-title">${esc(state.identity.name || "Service Card")}</h1>
-              <p class="hdr-banner-subtitle">${esc(state.identity.category || "Service documentation")}</p>
-            </div>
-          </div>
-          ${status ? `<span class="status-pill status-pill--on-dark${statusToneClass}">${esc(status)}</span>` : ""}
-        </div>
-      </div>
-      ${state.identity.nameAr ? `<div class="hdr-ar"><p class="title-ar" dir="rtl">${esc(state.identity.nameAr)}</p></div>` : ""}
-      <dl class="meta-grid">
-        <div class="meta-item"><dt>Service ID</dt><dd>${esc(state.identity.id || "-")}</dd></div>
-        <div class="meta-item"><dt>Version</dt><dd>${esc(state.identity.version || "1.0")}</dd></div>
-        <div class="meta-item"><dt>Category</dt><dd>${esc(state.identity.category || "-")}</dd></div>
-        <div class="meta-item"><dt>Owner</dt><dd>${esc(state.identity.owner || "-")}</dd></div>
-        <div class="meta-item"><dt>Date</dt><dd>${esc(state.identity.date || "-")}</dd></div>
-      </dl>
-    </header>
 
-    <section class="sec sec--summary">
-      <h2>Document summary</h2>
-      <dl class="summary-grid">
-        <div class="summary-card"><dt>SLA duration</dt><dd>${esc(sla.duration || "-")}</dd></div>
-        <div class="summary-card"><dt>Support group</dt><dd>${esc(supportGroup)}</dd></div>
-        <div class="summary-card"><dt>KPI count</dt><dd>${esc(String(kpiCount))}</dd></div>
-        <div class="summary-card"><dt>Workflow steps</dt><dd>${esc(String(totalSteps))}</dd></div>
-        <div class="summary-card"><dt>Approvals</dt><dd>${esc(String(approvalCount))}</dd></div>
-      </dl>
-    </section>
+  <p class="fgp-part-header">Part 1 &mdash; Business Service Card</p>
+  ${bcBody}
 
-    <section class="sec">
-      <h2>Service description</h2>
-      <div class="card">
-        <div class="prose">${esc(state.identity.description || "No description provided.").replace(/\n/g, "<br>")}</div>
-      </div>
-      ${
-        state.identity.descriptionAr
-          ? `<div class="card" dir="rtl">
-        <div class="prose">${esc(state.identity.descriptionAr).replace(/\n/g, "<br>")}</div>
-      </div>`
-          : ""
-      }
-    </section>
+  <hr class="fgp-divider">
 
-    <section class="sec">
-      <h2>Actors</h2>
-      <div class="table-wrap">
-      <table class="data">
-        <thead><tr><th>Name</th><th>Role</th><th>Department</th><th>Email</th></tr></thead>
-        <tbody>
-      ${actors
-        .map((a) => {
-          const { solid } = getActorPalette(a.name);
-          return `<tr><td><span class="actor-cell"><span class="actor-dot" style="background:${solid}"></span>${esc(a.name)}</span></td><td>${esc(a.role)}</td><td>${esc(a.department)}</td><td>${esc(a.email)}</td></tr>`;
-        })
-        .join("") || "<tr><td colspan='4' class='empty'>No actors defined.</td></tr>"}
-        </tbody>
-      </table>
-      </div>
-    </section>
+  <p class="fgp-part-header">Part 2 &mdash; Technical BMC Build Pack</p>
+  ${tbpBody}
 
-    <section class="sec sec--workflow">
-      <h2>Workflow &amp; approvals</h2>
-      ${legendHtml}
-      <div class="table-wrap">
-      <table class="data workflow-rich">
-        <thead><tr><th>#</th><th>Actor</th><th>Action / flow</th><th>Type / duration / notes</th><th>Outcome</th></tr></thead>
-        <tbody>
-      ${workflowRows}
-        </tbody>
-      </table>
-      </div>
-      ${flowPathHtml}
-      ${respCardsHtml}
-    </section>
+  <hr class="fgp-divider">
 
-    <section class="sec">
-      <h2>Process overview</h2>
-      <div class="card">
-        <div class="prose">Workflow is the authoritative process definition. Assignments, approvals, durations, and conditions are declared directly in workflow steps.</div>
-        <dl class="process-metrics">
-          <div class="process-metric"><dt>Total steps</dt><dd>${esc(String(totalSteps))}</dd></div>
-          <div class="process-metric"><dt>Approvals</dt><dd>${esc(String(approvalCount))}</dd></div>
-          <div class="process-metric"><dt>Execution steps</dt><dd>${esc(String(executionCount))}</dd></div>
-          <div class="process-metric"><dt>SLA duration</dt><dd>${esc(sla.duration || "-")}</dd></div>
-        </dl>
-      </div>
-    </section>
+  <p class="fgp-part-header">Part 3 &mdash; Governance &amp; Sign-off</p>
+  <div class="gov-section">
+    <h2>Sign-off Record</h2>
+    <div class="gov-stamp">${govStampCells}</div>
 
-    <section class="sec">
-      <h2>Form template</h2>
-      <div class="table-wrap">
-      <table class="data">
-        <thead><tr><th>#</th><th>Field name (EN / AR)</th><th>Field type</th><th>Initial values</th><th>Question (AR)</th><th>Mandatory</th><th>Dependency</th></tr></thead>
-        <tbody>
-      ${fields
-        .map(
-          (f, i) =>
-            `<tr><td>${i + 1}</td><td><div>${esc(f.nameEn)}</div><div class="field-ar" dir="rtl">${esc(f.nameAr)}</div></td><td>${esc(f.type)}</td><td>${esc(f.values).replace(/\n/g, "<br>")}</td><td dir="rtl">${esc(f.questionAr)}</td><td>${esc(f.mandatory)}</td><td>${esc(f.dependency)}</td></tr>`
-        )
-        .join("") || "<tr><td colspan='7' class='empty'>No fields defined.</td></tr>"}
-        </tbody>
-      </table>
-      </div>
-    </section>
+    <h2 style="margin-top:1.5rem">Governance Confirmations</h2>
+    <ul class="gov-checklist">${govChecks}</ul>
 
-    <section class="sec">
-      <h2>RACI matrix</h2>
-      <div class="table-wrap">
-      <table class="data">
-        <thead><tr><th>#</th><th>Step</th>${raciRoles.map((role) => `<th>${esc(role.label)}</th>`).join("")}</tr></thead>
-        <tbody>
-      ${
-        raci.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r.step)}</td>${raciRoles.map((role) => `<td>${esc(r[role.key] || "-")}</td>`).join("")}</tr>`).join("") ||
-        `<tr><td colspan="${2 + raciRoles.length}" class='empty'>No RACI rows defined.</td></tr>`
-      }
-        </tbody>
-      </table>
-      </div>
-    </section>
-
-    <section class="sec">
-      <h2>Support groups</h2>
-      <div class="table-wrap">
-      <table class="data">
-        <thead><tr><th>#</th><th>Support group</th><th>Names</th><th>Emails</th></tr></thead>
-        <tbody>
-      ${support.map((s, i) => `<tr><td>${i + 1}</td><td>${esc(s.supportGroup)}</td><td>${esc(s.names)}</td><td>${esc(s.emails)}</td></tr>`).join("") || "<tr><td colspan='4' class='empty'>No support groups defined.</td></tr>"}
-        </tbody>
-      </table>
-      </div>
-    </section>
-
-    <section class="sec">
-      <h2>SLA &amp; escalation</h2>
-      <div class="table-wrap">
-      <table class="data">
-        <thead><tr><th>Service</th><th>Requester(s)</th><th>Pre-requisites</th><th>Support group</th><th>Controls</th><th>Duration</th><th>Approval (who)</th><th>Approval (when)</th></tr></thead>
-        <tbody>
-      <tr>
-        <td>${esc(sla.service)}</td>
-        <td>${esc(sla.requester)}</td>
-        <td>${esc(sla.prerequisites)}</td>
-        <td>${esc(sla.supportGroup)}</td>
-        <td>${esc(sla.controls)}</td>
-        <td>${esc(sla.duration)}</td>
-        <td>${esc(sla.notif1Who)}<br><span class="muted">${esc(sla.notif2Who)}</span></td>
-        <td>${esc(sla.notif1When)}<br><span class="muted">${esc(sla.notif2When)}</span></td>
-      </tr>
-        </tbody>
-      </table>
-      </div>
-      <h3 class="sec-subtitle">SLA parts (multi-team)</h3>
-      <div class="table-wrap">
-      <table class="data">
-        <thead><tr><th>Part / phase</th><th>Responsible team</th><th>Scope</th><th>SLA duration</th><th>Target</th></tr></thead>
-        <tbody>
-      ${slaParts.map((p) => `<tr><td>${esc(p.part)}</td><td>${esc(p.team)}</td><td>${esc(p.scope)}</td><td>${esc(p.duration)}</td><td>${esc(p.target)}</td></tr>`).join("") || "<tr><td colspan='5' class='empty'>No SLA parts defined.</td></tr>"}
-        </tbody>
-      </table>
-      </div>
-      <h3 class="sec-subtitle">KPIs</h3>
-      <div class="table-wrap">
-        <table class="data">
-          <thead><tr><th>KPI</th><th>Formula</th><th>Target</th><th>Responsibility</th><th>Frequency</th></tr></thead>
-          <tbody>
-        ${kpis.map((k) => `<tr><td>${esc(k.name)}</td><td>${esc(k.formula)}</td><td>${esc(k.target)}</td><td>${esc(k.owner)}</td><td>${esc(k.frequency)}</td></tr>`).join("") || "<tr><td colspan='5' class='empty'>No KPIs defined.</td></tr>"}
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <footer class="ft">Damee Service Card Builder &middot; ${esc(state.identity.name || "Service Card")}</footer>
+    ${gov.publicationNotes ? `<h2 style="margin-top:1.5rem">Publication Notes</h2><p class="gov-notes">${esc(gov.publicationNotes).replace(/\n/g, "<br>")}</p>` : ""}
   </div>
+
+  <footer class="gov-footer">Full Governance Pack &middot; ${name} &middot; v${esc(id.version || "1.0")}</footer>
+
 </body>
 </html>`;
 }
