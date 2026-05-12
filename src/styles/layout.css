@@ -115,7 +115,7 @@
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  transition: background 0.12s, color 0.12s, border-color 0.12s, box-shadow 0.12s;
 }
 
 .export-type-btn:hover {
@@ -123,11 +123,12 @@
   color: var(--neutral-900);
 }
 
-.export-type-btn--active {
-  background: var(--neutral-0);
-  border-color: var(--neutral-200);
-  color: #1e40af;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+.btn.export-type-btn--active,
+.btn.export-type-btn--active:hover {
+  background: #1e40af;
+  border-color: #1e3a8a;
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(30, 58, 138, 0.3);
 }
 
 main.app-shell {
