@@ -6,25 +6,33 @@ import { downloadFile } from "../utils/dom.js";
 import { buildSelfContainedRenderOptions } from "./portable-assets.js";
 
 function whenPrintDocumentReady(doc) {
-  const fontsReady =
-    doc.fonts && typeof doc.fonts.ready !== "undefined"
-      ? doc.fonts.ready.catch(() => undefined)
-      : Promise.resolve();
+  const fontsReady = doc.fonts && typeof doc.fonts.ready !== "undefined" ? doc.fonts.ready.catch(() => undefined) : Promise.resolve();
 
   const imagesReady = Promise.all(
-    [...doc.images].map(
-      (img) =>
-        img.complete && img.naturalWidth > 0
-          ? Promise.resolve()
-          : new Promise((resolve) => {
-              const done = () => resolve();
-              img.addEventListener("load", done, { once: true });
-              img.addEventListener("error", done, { once: true });
-            })
+    [...doc.images].map((img) =>
+      img.complete && img.naturalWidth > 0
+        ? Promise.resolve()
+        : new Promise((resolve) => {
+            const done = () => resolve();
+            img.addEventListener("load", done, { once: true });
+            img.addEventListener("error", done, { once: true });
+          })
     )
   );
 
   return Promise.all([fontsReady, imagesReady]);
+}
+
+function exportFileBaseName(value, fallback = "Service_Card") {
+  const normalized = String(value || fallback)
+    .trim()
+    // eslint-disable-next-line no-control-regex
+    .replace(/[<>:"/\\|?*\u0000-\u001f]+/g, "")
+    .replace(/\s+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^\.+|\.+$/g, "");
+
+  return normalized || fallback;
 }
 
 /** Fallback when embedding fails; external decorative assets may break if the file is moved. */
@@ -49,7 +57,7 @@ export async function exportHtml(state) {
     console.warn("Self-contained embed failed, using partial HTML:", e);
     html = await renderMinimalPortable(state);
   }
-  const name = (state.identity.name || "Service_Card").replace(/\s+/g, "_");
+  const name = exportFileBaseName(state.identity?.name, "Service_Card");
   downloadFile(html, `${name}_Full.html`, "text/html");
 }
 
@@ -62,13 +70,13 @@ export async function exportBusinessCardHtml(state) {
     console.warn("Self-contained embed failed, using partial HTML:", e);
     html = await renderMinimalPortableBusiness(state);
   }
-  const name = (state.identity.name || "Service_Card").replace(/\s+/g, "_");
+  const name = exportFileBaseName(state.identity?.name, "Service_Card");
   downloadFile(html, `${name}_Business_Card.html`, "text/html");
 }
 
 export function exportMarkdown(state) {
   const md = renderMarkdown(state);
-  const name = (state.identity.name || "Service_Card").replace(/\s+/g, "_");
+  const name = exportFileBaseName(state.identity?.name, "Service_Card");
   downloadFile(md, `${name}.md`, "text/markdown");
 }
 
@@ -81,7 +89,7 @@ export async function exportTechBuildPackHtml(state) {
     console.warn("Self-contained embed failed, using partial HTML:", e);
     html = await renderMinimalPortableTechPack(state);
   }
-  const name = (state.identity.name || "Service").replace(/\s+/g, "_");
+  const name = exportFileBaseName(state.identity?.name, "Service");
   downloadFile(html, `${name}_BMC_Build_Pack.html`, "text/html");
 }
 
@@ -95,7 +103,9 @@ export async function printPdf(state, exportType = "business") {
   }
 
   popup.document.open();
-  popup.document.write(`<!DOCTYPE html><html><head><title>Preparing print...</title></head><body style="font-family: sans-serif; padding: 16px;">Preparing printable document...</body></html>`);
+  popup.document.write(
+    `<!DOCTYPE html><html><head><title>Preparing print...</title></head><body style="font-family: sans-serif; padding: 16px;">Preparing printable document...</body></html>`
+  );
   popup.document.close();
 
   let html;
@@ -115,7 +125,10 @@ export async function printPdf(state, exportType = "business") {
   popup.document.write(html);
   popup.document.close();
 
+  let printStarted = false;
   const runPrint = () => {
+    if (printStarted) return;
+    printStarted = true;
     requestAnimationFrame(() => {
       setTimeout(() => {
         whenPrintDocumentReady(popup.document).then(() => {

@@ -15,11 +15,13 @@ export function buildCardStyles({ fontStack, fontArStack, bgUrl, visualsUrl, bra
       --primary: ${brand.primary};
       --primary-dark: ${brand.primaryDark};
       --accent: ${brand.accent};
-      --card-bg: #f8fafc;
-      --radius: 10px;
-      --radius-sm: 6px;
-      --shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-      --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.08);
+      --accent-soft: #ccfbf1;
+      --warning: #b45309;
+      --card-bg: #fbfdff;
+      --radius: 12px;
+      --radius-sm: 7px;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow-lg: 0 24px 70px rgba(15, 23, 42, 0.12);
     }
     * { box-sizing: border-box; }
     html { font-size: 15px; -webkit-font-smoothing: antialiased; }
@@ -29,12 +31,13 @@ export function buildCardStyles({ fontStack, fontArStack, bgUrl, visualsUrl, bra
       color: var(--ink);
       line-height: 1.55;
       min-height: 100%;
-      padding: 0;
+      padding: 2rem 1rem 3rem;
       background-image:
-        linear-gradient(180deg, rgba(248, 250, 252, 0.94) 0%, rgba(241, 245, 249, 0.9) 55%, rgba(238, 242, 247, 0.92) 100%),
+        radial-gradient(circle at 16% 0%, rgba(20, 184, 166, 0.12) 0, rgba(20, 184, 166, 0) 32rem),
+        linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(241, 245, 249, 0.94) 55%, rgba(226, 232, 240, 0.92) 100%),
         url("${bgUrl}");
-      background-size: cover, cover;
-      background-position: center top, center top;
+      background-size: auto, cover, cover;
+      background-position: left top, center top, center top;
       background-attachment: fixed;
       background-repeat: no-repeat;
     }
@@ -44,7 +47,7 @@ export function buildCardStyles({ fontStack, fontArStack, bgUrl, visualsUrl, bra
       inset: 0;
       background: url("${visualsUrl}") no-repeat right 6% bottom 10%;
       background-size: min(520px, 46vw);
-      opacity: 0.42;
+      opacity: 0.2;
       pointer-events: none;
       z-index: 0;
     }
@@ -55,10 +58,9 @@ export function buildCardStyles({ fontStack, fontArStack, bgUrl, visualsUrl, bra
       margin: 0 auto;
       background: #fff;
       box-shadow: var(--shadow-lg);
-      border-radius: 0 0 var(--radius) var(--radius);
+      border-radius: var(--radius);
       overflow: hidden;
       border: 1px solid rgba(148, 163, 184, 0.35);
-      border-top: none;
     }
     .hdr {
       padding: 0;
@@ -69,7 +71,7 @@ export function buildCardStyles({ fontStack, fontArStack, bgUrl, visualsUrl, bra
     .hdr-banner {
       background: linear-gradient(118deg, #0f172a 0%, #1e3a8a 46%, #2563eb 96%);
       color: #fff;
-      padding: 1.2rem 2rem 1.35rem;
+      padding: 1.45rem 2rem 1.55rem;
     }
     .hdr-banner-inner {
       display: flex;
@@ -89,15 +91,16 @@ export function buildCardStyles({ fontStack, fontArStack, bgUrl, visualsUrl, bra
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.14em;
-      opacity: 0.88;
+      color: #99f6e4;
       margin: 0 0 0.3rem;
     }
     .hdr-banner-title {
-      font-size: 1.45rem;
+      font-size: 1.58rem;
       font-weight: 800;
       line-height: 1.2;
       margin: 0;
       letter-spacing: -0.02em;
+      max-width: 40rem;
     }
     .hdr-banner-subtitle {
       margin: 0.28rem 0 0;
@@ -105,6 +108,7 @@ export function buildCardStyles({ fontStack, fontArStack, bgUrl, visualsUrl, bra
       font-size: 0.82rem;
       font-weight: 600;
       line-height: 1.4;
+      max-width: 34rem;
     }
     .hdr-ar {
       padding: 0.85rem 2rem;
@@ -151,7 +155,7 @@ export function buildCardStyles({ fontStack, fontArStack, bgUrl, visualsUrl, bra
       gap: 0.65rem 1.25rem;
       padding: 1.1rem 2rem 1.35rem;
       margin: 0;
-      background: var(--surface);
+      background: #f8fafc;
       border-top: 1px solid var(--border);
     }
     .meta-item { margin: 0; }
@@ -169,6 +173,7 @@ export function buildCardStyles({ fontStack, fontArStack, bgUrl, visualsUrl, bra
       font-weight: 600;
       color: var(--ink);
       word-break: break-word;
+      overflow-wrap: anywhere;
     }
     .sec {
       padding: 1.5rem 2rem 1.65rem;
@@ -230,6 +235,7 @@ export function buildCardStyles({ fontStack, fontArStack, bgUrl, visualsUrl, bra
       color: #334155;
       orphans: 3;
       widows: 3;
+      overflow-wrap: anywhere;
     }
     .prose + .prose { margin-top: 0.85rem; }
     .card {
@@ -238,6 +244,7 @@ export function buildCardStyles({ fontStack, fontArStack, bgUrl, visualsUrl, bra
       border-radius: var(--radius-sm);
       padding: 1rem 1.15rem;
       box-shadow: var(--shadow);
+      overflow-wrap: anywhere;
     }
     .card[dir="rtl"] {
       border-right: 3px solid var(--accent);
@@ -263,6 +270,8 @@ export function buildCardStyles({ fontStack, fontArStack, bgUrl, visualsUrl, bra
       border-bottom: 1px solid #f1f5f9;
       text-align: left;
       vertical-align: top;
+      overflow-wrap: anywhere;
+      hyphens: auto;
     }
     table.data th {
       background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
@@ -278,6 +287,21 @@ export function buildCardStyles({ fontStack, fontArStack, bgUrl, visualsUrl, bra
     table.data td.empty, table.data .muted {
       color: var(--muted);
       font-style: italic;
+    }
+    .bc-kpi-table,
+    .tbp-tbl {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.82rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .bc-kpi-table th,
+    .bc-kpi-table td,
+    .tbp-tbl th,
+    .tbp-tbl td {
+      overflow-wrap: anywhere;
+      hyphens: auto;
     }
     .field-ar {
       margin-top: 0.35rem;
@@ -625,6 +649,46 @@ export function buildCardStyles({ fontStack, fontArStack, bgUrl, visualsUrl, bra
       table.data:not(.workflow-rich) tbody tr:nth-child(even) td { background: #f8fafc !important; }
       table.data tr { break-inside: avoid; page-break-inside: avoid; }
       table.workflow-rich tbody tr { break-inside: avoid; page-break-inside: avoid; }
+
+      .bc-kpi-table,
+      .tbp-tbl {
+        width: 100% !important;
+        table-layout: fixed !important;
+        border-collapse: collapse !important;
+        font-size: 7.5pt !important;
+      }
+
+      .bc-kpi-table thead,
+      .tbp-tbl thead { display: table-header-group; }
+
+      .bc-kpi-table th,
+      .bc-kpi-table td,
+      .tbp-tbl th,
+      .tbp-tbl td {
+        border: 0.35pt solid #64748b !important;
+        padding: 4px 5px !important;
+        vertical-align: top !important;
+        overflow-wrap: anywhere !important;
+        word-break: normal !important;
+      }
+
+      .bc-kpi-table th,
+      .tbp-tbl th {
+        background: #e2e8f0 !important;
+        color: #1e293b !important;
+        font-size: 6.8pt !important;
+        letter-spacing: 0.02em !important;
+      }
+
+      .bc-kpi-table tr,
+      .tbp-tbl tr { break-inside: avoid; page-break-inside: avoid; }
+
+      .bc-card,
+      .bc-stamp-cell,
+      .tbp-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
 
       table.workflow-rich .wf-actor, table.workflow-rich .wf-num {
         -webkit-print-color-adjust: exact !important;
