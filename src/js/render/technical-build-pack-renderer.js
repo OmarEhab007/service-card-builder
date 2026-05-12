@@ -17,20 +17,29 @@ function tbpStyles(opts) {
   const root = normalizeAssetBase(opts.assetBase);
   const bgUrl = opts.embeddedBackgroundDataUri || `${root}Background.svg`;
   const visualsUrl = opts.embeddedVisualsDataUri || `${root}Visuals.svg`;
-  const brand = { primary: "#1e3a8a", primaryDark: "#172554", surface: "#f1f5f9", ink: "#0f172a", muted: "#64748b", border: "#e2e8f0", accent: "#2563eb" };
+  const brand = {
+    primary: "#1e3a8a",
+    primaryDark: "#172554",
+    surface: "#f1f5f9",
+    ink: "#0f172a",
+    muted: "#64748b",
+    border: "#e2e8f0",
+    accent: "#2563eb"
+  };
   const base = buildCardStyles({ fontStack: FONT_STACK, fontArStack: FONT_AR_STACK, bgUrl, visualsUrl, brand });
   return (
     base +
     `
-    .tbp-badge { display:inline-block;padding:2px 10px;border-radius:999px;font-size:.72rem;font-weight:700;background:#172554;color:#bfdbfe;letter-spacing:.04em;margin-bottom:12px; }
-    .tbp-sec { margin-bottom:2rem; }
-    .tbp-sec h2 { font-size:1rem;font-weight:700;color:#1e3a8a;border-bottom:2px solid #e2e8f0;padding-bottom:.3rem;margin-bottom:.85rem; }
-    .tbp-sec h3 { font-size:.85rem;font-weight:700;color:#1e40af;margin:.85rem 0 .4rem; }
+    .tbp-badge { display:inline-block;padding:.36rem .72rem;border-radius:999px;font-size:.68rem;font-weight:800;background:rgba(15,23,42,.72);color:#99f6e4;letter-spacing:.07em;text-transform:uppercase;border:1px solid rgba(153,246,228,.35); }
+    .tbp-sec { padding:0 2rem;margin:1.55rem 0 0; }
+    .tbp-sec h2 { display:flex;align-items:center;gap:.65rem;font-size:.78rem;font-weight:800;color:#0f766e;text-transform:uppercase;letter-spacing:.09em;border:0;padding:0;margin:0 0 .85rem; }
+    .tbp-sec h2::after { content:"";height:1px;flex:1;background:linear-gradient(90deg,#99f6e4,rgba(203,213,225,0)); }
+    .tbp-sec h3 { font-size:.82rem;font-weight:800;color:#1e3a8a;margin:1rem 0 .45rem;letter-spacing:.01em; }
     .tbp-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.65rem; }
     .tbp-item dt { font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#64748b;margin-bottom:1px; }
     .tbp-item dd { font-size:.85rem;color:#0f172a;margin:0; }
-    .tbp-card { background:#fff;border:1px solid #e2e8f0;border-radius:7px;padding:.85rem 1rem;margin-bottom:.75rem; }
-    .tbp-card--mode { background:#eff6ff;border-color:#bfdbfe; }
+    .tbp-card { background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem 1.15rem;margin-bottom:.75rem;box-shadow:0 1px 2px rgba(15,23,42,.04);overflow-wrap:anywhere; }
+    .tbp-card--mode { background:linear-gradient(135deg,#f0fdfa 0%,#eff6ff 100%);border-color:#99f6e4;border-left:3px solid #14b8a6; }
     .tbp-mode-label { font-size:1.05rem;font-weight:700;color:#1e3a8a; }
     .tbp-field { font-size:.82rem;color:#0f172a;line-height:1.5; }
     .tbp-field strong { color:#334155; }
@@ -40,6 +49,12 @@ function tbpStyles(opts) {
     .tbp-tbl tr:nth-child(even) td { background:#f8fafc; }
     .tbp-empty { color:#94a3b8;font-style:italic;font-size:.8rem; }
     .tbp-tag { display:inline-block;padding:1px 7px;border-radius:4px;font-size:.72rem;font-weight:600;background:#dbeafe;color:#1e40af;margin-right:4px; }
+    @media print {
+      .tbp-sec { padding:0;margin-top:1rem; }
+      .tbp-sec h2 { font-size:8pt;margin-bottom:.45rem;color:#0f766e !important; }
+      .tbp-sec h2::after { background:#cbd5e1 !important; }
+      .tbp-card { box-shadow:none !important; }
+    }
     `
   );
 }
@@ -112,27 +127,38 @@ export function renderTechnicalBuildPack(state, opts = {}) {
   const showSrm = mode === "srm" || mode === "hybrid";
 
   const legendItems = uniqueWorkflowActors(workflow);
-  const legendHtml = legendItems.length === 0 ? "" : `<div class="workflow-legend">
+  const legendHtml =
+    legendItems.length === 0
+      ? ""
+      : `<div class="workflow-legend">
     <div class="workflow-legend-title">Team roles</div>
     <div class="workflow-legend-chips">
-      ${legendItems.map((label) => { const { solid } = getActorPalette(label); return `<span class="legend-chip" style="--sw:${solid}"><span class="legend-swatch"></span>${esc(label)}</span>`; }).join("")}
+      ${legendItems
+        .map((label) => {
+          const { solid } = getActorPalette(label);
+          return `<span class="legend-chip" style="--sw:${solid}"><span class="legend-swatch"></span>${esc(label)}</span>`;
+        })
+        .join("")}
     </div>
   </div>`;
 
-  const workflowRows = workflow.length === 0
-    ? "<tr><td colspan='5' class='empty'>No workflow steps defined.</td></tr>"
-    : workflow.map((w, i) => {
-        const { solid, light } = getActorPalette(w.actor);
-        const ot = outcomeTone(w.type);
-        const cond = w.condition && String(w.condition).trim() && String(w.condition).trim() !== "-";
-        return `<tr style="--row-solid:${solid};--row-light:${light}">
+  const workflowRows =
+    workflow.length === 0
+      ? "<tr><td colspan='5' class='empty'>No workflow steps defined.</td></tr>"
+      : workflow
+          .map((w, i) => {
+            const { solid, light } = getActorPalette(w.actor);
+            const ot = outcomeTone(w.type);
+            const cond = w.condition && String(w.condition).trim() && String(w.condition).trim() !== "-";
+            return `<tr style="--row-solid:${solid};--row-light:${light}">
           <td class="wf-num"><span class="step-disc">${i + 1}</span></td>
           <td class="wf-actor">${esc(w.actor)}</td>
           <td class="wf-action">${esc(w.step)}</td>
           <td class="wf-meta"><span class="type-chip">${esc(w.type)}</span><div class="wf-sub">${esc(w.duration)}</div>${cond ? `<div class="wf-sub">${esc(w.condition)}</div>` : ""}</td>
           <td class="wf-out"><span class="outcome-pill ${ot.class}">${esc(ot.label)}</span></td>
         </tr>`;
-      }).join("");
+          })
+          .join("");
 
   const styles = tbpStyles(opts);
 
@@ -177,15 +203,23 @@ export function renderTechnicalBuildPack(state, opts = {}) {
     </div>
   </section>
 
-  ${showDwp ? `<section class="tbp-sec">
+  ${
+    showDwp
+      ? `<section class="tbp-sec">
     <h2>DWP Catalog Configuration</h2>
     ${dwpSection(bmc.dwp)}
-  </section>` : ""}
+  </section>`
+      : ""
+  }
 
-  ${showSrm ? `<section class="tbp-sec">
+  ${
+    showSrm
+      ? `<section class="tbp-sec">
     <h2>SRM / SRD Configuration</h2>
     ${srmSection(bmc.srm)}
-  </section>` : ""}
+  </section>`
+      : ""
+  }
 
   <section class="tbp-sec">
     <h2>Form Fields &amp; Variable Mapping</h2>
@@ -193,7 +227,10 @@ export function renderTechnicalBuildPack(state, opts = {}) {
     <table class="tbp-tbl">
       <thead><tr><th>#</th><th>Field (EN / AR)</th><th>Type</th><th>Mandatory</th><th>BMC Variable</th><th>Initial Values</th><th>Dependency</th></tr></thead>
       <tbody>
-        ${fields.map((f, i) => `<tr>
+        ${
+          fields
+            .map(
+              (f, i) => `<tr>
           <td>${i + 1}</td>
           <td><div>${esc(f.nameEn)}</div>${f.nameAr ? `<div class="field-ar" dir="rtl">${esc(f.nameAr)}</div>` : ""}</td>
           <td>${esc(f.type)}</td>
@@ -201,7 +238,10 @@ export function renderTechnicalBuildPack(state, opts = {}) {
           <td>${f.bmcVariable ? `<span class="tbp-tag">${esc(f.bmcVariable)}</span>` : '<span class="tbp-empty">-</span>'}</td>
           <td>${esc(f.values || "").replace(/\n/g, "<br>")}</td>
           <td>${esc(f.dependency || "-")}</td>
-        </tr>`).join("") || `<tr><td colspan="7" class="tbp-empty" style="text-align:center;padding:.75rem">No fields defined.</td></tr>`}
+        </tr>`
+            )
+            .join("") || `<tr><td colspan="7" class="tbp-empty" style="text-align:center;padding:.75rem">No fields defined.</td></tr>`
+        }
       </tbody>
     </table>
     </div>
@@ -236,7 +276,14 @@ export function renderTechnicalBuildPack(state, opts = {}) {
     <table class="tbp-tbl">
       <thead><tr><th>Name</th><th>Role</th><th>Department</th><th>Email</th></tr></thead>
       <tbody>
-        ${actors.map((a) => { const { solid } = getActorPalette(a.name); return `<tr><td><span class="actor-cell"><span class="actor-dot" style="background:${solid}"></span>${esc(a.name)}</span></td><td>${esc(a.role)}</td><td>${esc(a.department)}</td><td>${esc(a.email)}</td></tr>`; }).join("") || `<tr><td colspan="4" class="tbp-empty" style="text-align:center;padding:.75rem">No actors defined.</td></tr>`}
+        ${
+          actors
+            .map((a) => {
+              const { solid } = getActorPalette(a.name);
+              return `<tr><td><span class="actor-cell"><span class="actor-dot" style="background:${solid}"></span>${esc(a.name)}</span></td><td>${esc(a.role)}</td><td>${esc(a.department)}</td><td>${esc(a.email)}</td></tr>`;
+            })
+            .join("") || `<tr><td colspan="4" class="tbp-empty" style="text-align:center;padding:.75rem">No actors defined.</td></tr>`
+        }
       </tbody>
     </table>
     </div>
@@ -258,25 +305,37 @@ export function renderTechnicalBuildPack(state, opts = {}) {
         ${fieldRow("Notif 2 Threshold", sla.notif2When)}
       </div>
     </div>
-    ${slaParts.length > 0 ? `<h3>SLA Parts (Multi-team)</h3>
+    ${
+      slaParts.length > 0
+        ? `<h3>SLA Parts (Multi-team)</h3>
     <div class="table-wrap"><table class="tbp-tbl">
       <thead><tr><th>Part / Phase</th><th>Responsible Team</th><th>Scope</th><th>SLA Duration</th><th>Target</th></tr></thead>
       <tbody>${slaParts.map((p) => `<tr><td>${esc(p.part)}</td><td>${esc(p.team)}</td><td>${esc(p.scope)}</td><td>${esc(p.duration)}</td><td>${esc(p.target)}</td></tr>`).join("")}</tbody>
-    </table></div>` : ""}
-    ${kpis.length > 0 ? `<h3>KPIs</h3>
+    </table></div>`
+        : ""
+    }
+    ${
+      kpis.length > 0
+        ? `<h3>KPIs</h3>
     <div class="table-wrap"><table class="tbp-tbl">
       <thead><tr><th>KPI</th><th>Formula</th><th>Target</th><th>Owner</th><th>Frequency</th></tr></thead>
       <tbody>${kpis.map((k) => `<tr><td>${esc(k.name)}</td><td>${esc(k.formula)}</td><td>${esc(k.target)}</td><td>${esc(k.owner)}</td><td>${esc(k.frequency)}</td></tr>`).join("")}</tbody>
-    </table></div>` : ""}
+    </table></div>`
+        : ""
+    }
   </section>
 
-  ${bmc.deploymentChecklist || bmc.localizationNotes ? `<section class="tbp-sec">
+  ${
+    bmc.deploymentChecklist || bmc.localizationNotes
+      ? `<section class="tbp-sec">
     <h2>Deployment &amp; Localization</h2>
     <div class="tbp-card">
       ${textBlock("Deployment & Validation Checklist", bmc.deploymentChecklist)}
       ${textBlock("Localization Requirements", bmc.localizationNotes)}
     </div>
-  </section>` : ""}
+  </section>`
+      : ""
+  }
 
   <section class="tbp-sec">
     <h2>Support Groups</h2>

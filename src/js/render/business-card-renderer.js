@@ -89,12 +89,13 @@ function businessCardStyles(opts) {
     base +
     `
     .bc-badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .75rem; font-weight: 600; background: #dbeafe; color: #1e3a8a; margin-bottom: 12px; }
-    .bc-section { margin-bottom: 2rem; }
-    .bc-section h2 { font-size: 1.05rem; font-weight: 700; color: #1e40af; border-bottom: 2px solid #e2e8f0; padding-bottom: .35rem; margin-bottom: 1rem; }
+    .bc-section { padding: 0 2rem; margin: 1.55rem 0 0; }
+    .bc-section h2 { display:flex; align-items:center; gap:.65rem; font-size:.78rem; font-weight:800; color:#0f766e; text-transform:uppercase; letter-spacing:.09em; border:0; padding:0; margin:0 0 .85rem; }
+    .bc-section h2::after { content:""; height:1px; flex:1; background:linear-gradient(90deg,#99f6e4,rgba(203,213,225,0)); }
     .bc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .75rem; }
     .bc-item dt { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #64748b; margin-bottom: 2px; }
     .bc-item dd { font-size: .9rem; color: #0f172a; margin: 0; }
-    .bc-prose { font-size: .9rem; color: #0f172a; line-height: 1.6; }
+    .bc-prose { font-size: .9rem; color: #0f172a; line-height: 1.62; margin:0; overflow-wrap:anywhere; }
     .bc-prose + .bc-prose { margin-top: .75rem; }
     .bc-journey ol { margin: 0; padding-left: 1.4rem; }
     .bc-journey li { padding: .4rem 0; font-size: .9rem; color: #0f172a; }
@@ -109,7 +110,14 @@ function businessCardStyles(opts) {
     .bc-stamp-cell { border: 1px solid #e2e8f0; border-radius: 6px; padding: .6rem .75rem; }
     .bc-stamp-cell dt { font-size: .68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
     .bc-stamp-cell dd { margin: 0; font-size: .85rem; color: #0f172a; min-height: 1.4rem; border-top: 1px solid #e2e8f0; margin-top: .4rem; padding-top: .3rem; }
-    .bc-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem 1.25rem; }
+    .bc-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem 1.25rem; box-shadow:0 1px 2px rgba(15,23,42,.04); }
+    .bc-card--accent { border-left:3px solid #14b8a6; }
+    @media print {
+      .bc-section { padding:0; margin-top:1rem; }
+      .bc-section h2 { font-size:8pt; margin-bottom:.45rem; color:#0f766e !important; }
+      .bc-section h2::after { background:#cbd5e1 !important; }
+      .bc-card { box-shadow:none !important; }
+    }
   `
   );
 }
@@ -132,7 +140,13 @@ export function renderBusinessCard(state, opts = {}) {
   const journeySteps = journeyFromWorkflow(workflow);
   const approvalLines = approvalSummaryFromState(state);
 
-  const supportGroup = sla.supportGroup || support.map((r) => r.supportGroup).filter(Boolean).join(", ") || "-";
+  const supportGroup =
+    sla.supportGroup ||
+    support
+      .map((r) => r.supportGroup)
+      .filter(Boolean)
+      .join(", ") ||
+    "-";
   const escalation = [sla.notif1Who, sla.notif2Who].filter(Boolean).join("; ") || "-";
 
   const ownershipRows = [
@@ -185,7 +199,7 @@ export function renderBusinessCard(state, opts = {}) {
 
     <section class="bc-section">
       <h2>Business Description</h2>
-      <div class="bc-card">
+      <div class="bc-card bc-card--accent">
         <p class="bc-prose">${esc(id.description || "No description provided.").replace(/\n/g, "<br>")}</p>
         ${id.descriptionAr ? `<p class="bc-prose" dir="rtl">${esc(id.descriptionAr).replace(/\n/g, "<br>")}</p>` : ""}
         ${id.businessPurpose ? `<hr style="border:none;border-top:1px solid #e2e8f0;margin:.75rem 0"><p class="bc-prose"><strong>Business Purpose & Value:</strong> ${esc(id.businessPurpose).replace(/\n/g, "<br>")}</p>` : ""}
