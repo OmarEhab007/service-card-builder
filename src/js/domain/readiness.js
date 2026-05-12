@@ -40,7 +40,7 @@ function technicalChecklist(state) {
   const isSrm = mode === "srm" || mode === "hybrid";
 
   const items = [
-    { label: "Implementation mode set", ok: mode !== "none", critical: true }
+    { label: "Implementation mode set", ok: mode !== "none", critical: false }
   ];
 
   if (isDwp) {
